@@ -1,4 +1,4 @@
-const CACHE_NAME = "fitness-app-v5";
+const CACHE_NAME = "fitness-app-v6";
 const APP_FILES = [
   "./",
   "./index.html",
@@ -7,6 +7,7 @@ const APP_FILES = [
   "./enhancements.js",
   "./gif-fix.js",
   "./timer-ui.js",
+  "./ios-shortcuts-timer.js",
   "./variants.js",
   "./manifest.webmanifest",
 ];
