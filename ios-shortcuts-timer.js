@@ -113,6 +113,7 @@ function injectIosShortcutTimerSettings() {
     .ios-shortcut-help{margin:12px 0;color:var(--muted);font-size:.78rem}
     .ios-shortcut-status{min-height:1.2em;margin:10px 0 0;color:var(--accent);font-size:.75rem}
     .ios-shortcut-status.is-error{color:var(--danger)}
+    .timer-panel.is-ios-shortcut .timer-actions{grid-template-columns:1fr 1fr}
     .ios-shortcut-toast{position:fixed;z-index:200;right:14px;bottom:calc(90px + env(safe-area-inset-bottom));left:14px;max-width:520px;margin:auto;padding:12px 15px;border:1px solid rgb(126 226 173 / 35%);border-radius:14px;background:rgb(19 27 24 / 97%);color:var(--accent);box-shadow:var(--shadow);font-size:.8rem;font-weight:750;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .18s ease,transform .18s ease}
     .ios-shortcut-toast.is-visible{opacity:1;transform:translateY(0)}
     .ios-shortcut-toast.is-error{border-color:rgb(255 142 142 / 40%);color:var(--danger)}
@@ -136,6 +137,12 @@ function injectIosShortcutTimerSettings() {
       Crea un comando rapido chiamato <strong>Timer Palestra</strong> che riceve
       un numero di secondi e avvia un timer iOS.
     </p>
+    <p class="ios-shortcut-help">
+      In questa modalità il timer locale resta solo un riferimento visivo.
+      L'avviso a schermo bloccato è affidato al timer nativo avviato da
+      Comandi Rapidi. Il pulsante Stop viene nascosto perché non potrebbe
+      fermare il timer di iOS.
+    </p>
     <button id="testIosShortcutTimer" class="secondary-button" type="button">
       Test timer iOS 10 secondi
     </button>
@@ -152,20 +159,31 @@ function injectIosShortcutTimerSettings() {
   toggle.checked = settings.enabled;
   nameInput.value = settings.shortcutName;
 
+  function updateTimerControls() {
+    const stopButton = document.querySelector("#timerStopButton");
+    document.querySelector(".timer-panel")?.classList.toggle(
+      "is-ios-shortcut",
+      toggle.checked
+    );
+    if (stopButton) stopButton.hidden = toggle.checked;
+  }
+
   function storeSettings() {
     saveIosShortcutTimerSettings({
       enabled: toggle.checked,
       shortcutName: nameInput.value.trim()
     });
+    updateTimerControls();
     showIosShortcutTimerMessage(
       toggle.checked
-        ? "Modalità iOS attiva: tocca una durata per avviare entrambi i timer."
+        ? "Modalità iOS attiva: scegli la durata e premi Avvia."
         : "Modalità iOS disattivata: verrà usato solo il timer della webapp."
     );
   }
 
   toggle.addEventListener("change", storeSettings);
   nameInput.addEventListener("change", storeSettings);
+  updateTimerControls();
   section.querySelector("#testIosShortcutTimer").addEventListener("click", () => {
     storeSettings();
     if (!toggle.checked) {
@@ -183,20 +201,15 @@ function injectIosShortcutTimerSettings() {
 function setupIosShortcutTimerBridge() {
   injectIosShortcutTimerSettings();
 
-  document.querySelectorAll(".timer-presets button").forEach((button) => {
-    button.addEventListener("click", () => {
-      const settings = loadIosShortcutTimerSettings();
-      if (!settings.enabled) return;
-
-      const seconds = Number(button.dataset.seconds);
-      startLocalFallbackTimer(seconds);
-      startIosShortcutTimer(seconds);
-    });
-  });
-
   document.querySelector("#timerStartButton")?.addEventListener("click", () => {
     const settings = loadIosShortcutTimerSettings();
     if (!settings.enabled) return;
+    if (
+      timerRemaining <= 0 ||
+      document.querySelector(".timer-panel")?.classList.contains("is-finished")
+    ) {
+      return;
+    }
     startIosShortcutTimer(timerRemaining > 0 ? timerRemaining : timerDuration);
   });
 }
