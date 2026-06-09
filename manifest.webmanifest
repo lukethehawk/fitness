@@ -1,0 +1,10 @@
+{
+  "name": "Scheda palestra 3 giorni",
+  "short_name": "Scheda palestra",
+  "description": "Scheda palestra digitale Upper / Lower con timer pause.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b100f",
+  "theme_color": "#101715",
+  "lang": "it"
+}
