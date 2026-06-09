@@ -8,6 +8,7 @@ Webapp statica mobile-first per consultare e tracciare una routine Upper / Lower
 - Peso, note e serie completate salvati in `localStorage`.
 - Timer pause da 60, 90, 120 e 180 secondi con vibrazione, quando supportata.
 - Notifica di sistema alla fine del timer, quando autorizzata dal browser.
+- Guide WorkoutX su richiesta con GIF e istruzioni dettagliate.
 - Esercizi personalizzati assegnabili a ciascun giorno.
 - Reset dei dati del solo giorno aperto o reset completo.
 - Dashboard con allenamento consigliato in base al giorno della settimana.
@@ -57,6 +58,12 @@ L'`id` deve essere unico e non andrebbe cambiato dopo l'uso, perché collega l'e
 ## Nota sui dati
 
 I dati sono locali al browser tramite `localStorage`: non vengono sincronizzati tra dispositivi e possono essere rimossi cancellando i dati del sito dal browser.
+
+## Guide WorkoutX
+
+Ogni esercizio predefinito è collegato a una variante corrispondente del database WorkoutX. Premi **Guida GIF** per caricare animazione, attrezzatura, muscoli e istruzioni.
+
+La chiave API si inserisce dal pulsante **Menu** e viene conservata esclusivamente nel `localStorage` del dispositivo. Non deve essere scritta nel codice o pubblicata nel repository. Ogni guida scaricata viene memorizzata localmente: le aperture successive non consumano altre richieste API.
 
 ## Notifiche su iPhone
 
