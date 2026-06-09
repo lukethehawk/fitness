@@ -72,6 +72,21 @@ function setupTimerBubble() {
 
   injectTimerBubbleStyles();
 
+  if (timerNotificationStatus) {
+    const menuSheet = document.querySelector(".menu-sheet");
+    const insertionPoint =
+      menuSheet?.querySelector(".custom-list-heading") ||
+      menuSheet?.querySelector(".data-actions");
+    if (insertionPoint) {
+      const infoSection = document.createElement("section");
+      infoSection.className = "ios-shortcut-settings";
+      const title = document.createElement("h3");
+      title.textContent = "Timer e notifiche";
+      infoSection.append(title, timerNotificationStatus);
+      insertionPoint.before(infoSection);
+    }
+  }
+
   const bubble = document.createElement("button");
   bubble.type = "button";
   bubble.className = "timer-fab";
