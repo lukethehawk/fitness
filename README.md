@@ -27,14 +27,18 @@ La modalità opzionale **Timer iOS** usa lo schema URL ufficiale `shortcuts://` 
 4. Converti l'input del comando in un numero, se necessario.
 5. Aggiungi l'azione **Avvia timer** usando quel numero di secondi come durata.
 6. Salva il comando.
-7. Nella PWA apri **Menu**.
+7. Nella webapp aperta in Safari vai su **Menu**.
 8. Attiva **Usa timer nativo iOS tramite Comandi Rapidi**.
 9. Inserisci come nome comando **Timer Palestra**.
 10. Premi **Test timer iOS 10 secondi**.
 
-Quando la modalità è attiva, toccando `60s`, `90s`, `120s` o `180s` parte anche il countdown locale come riferimento visivo e viene aperto il Comando Rapido con la durata selezionata.
+Quando la modalità è attiva, i pulsanti `60s`, `90s`, `120s` e `180s` selezionano soltanto la durata. Il timer locale e il Comando Rapido partono esclusivamente premendo **Avvia**.
 
-La PWA non controlla direttamente l'app Orologio: il collegamento passa da Comandi Rapidi. iOS può mostrare una conferma o aprire l'app Comandi, ma il timer nativo è più affidabile a schermo bloccato rispetto al timer JavaScript.
+In modalità iOS il pulsante **Stop** viene nascosto, perché potrebbe fermare solo il countdown della webapp e non il timer nativo. Nella modalità interna della webapp rimane invece disponibile.
+
+Alla scadenza **Avvia** diventa **Nuovo timer**. Il primo tocco ripristina la durata selezionata senza avviare un altro timer; per partire nuovamente occorre premere **Avvia**.
+
+La webapp non controlla direttamente l'app Orologio: il collegamento passa da Comandi Rapidi. iOS può mostrare una conferma o aprire l'app Comandi, ma il timer nativo è più affidabile a schermo bloccato rispetto al timer JavaScript.
 
 Il bridge usa questo formato documentato da Apple:
 
@@ -44,9 +48,9 @@ shortcuts://run-shortcut?name=Timer%20Palestra&input=text&text=60
 
 ## Limite del timer web su iPhone
 
-Il timer salva l'orario esatto di fine. Se la PWA viene sospesa e poi riaperta, il conto alla rovescia si riallinea automaticamente.
+Il timer salva l'orario esatto di fine. Se la pagina viene sospesa e poi riaperta in Safari, il conto alla rovescia si riallinea automaticamente.
 
-iOS può però sospendere il JavaScript quando la PWA passa in background o lo schermo si blocca. Il Comando Rapido aggira questo limite avviando il timer nativo, senza introdurre un backend.
+iOS può però sospendere il JavaScript quando Safari passa in background o lo schermo si blocca. Il Comando Rapido aggira questo limite avviando il timer nativo, senza introdurre un backend.
 
 ## Varianti degli esercizi
 
@@ -64,7 +68,7 @@ Le GIF WorkoutX vengono richieste con autenticazione e conservate nella cache de
 
 ## Installazione
 
-Apri [lukethehawk.github.io/fitness](https://lukethehawk.github.io/fitness/) dal browser del telefono e usa **Aggiungi a schermata Home** o **Installa app**.
+Apri [lukethehawk.github.io/fitness](https://lukethehawk.github.io/fitness/) direttamente in Safari. Per il flusso con Comandi Rapidi non è necessario installare la webapp sulla schermata Home.
 
 ## Dati
 
