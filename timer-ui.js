@@ -21,7 +21,6 @@ function injectTimerBubbleStyles() {
     .timer-fab::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor}
     .timer-fab.is-running::before{animation:timerBubblePulse 1s ease-in-out infinite}
     .timer-fab.is-finished{background:var(--accent);color:var(--accent-ink);animation:timerBubbleFinished .7s ease-in-out 3}
-    .timer-background-note{margin:8px 2px 0;color:var(--muted);font-size:.7rem}
     @keyframes timerBubblePulse{50%{opacity:.25;transform:scale(.75)}}
     @keyframes timerBubbleFinished{50%{transform:scale(1.08)}}
     @media (min-width:600px){.timer-panel{right:max(22px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom))}.timer-fab{right:max(22px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom))}}
@@ -86,12 +85,6 @@ function setupTimerBubble() {
   closeButton.textContent = "×";
   timerPanelElement.querySelector(".timer-topline")?.append(closeButton);
 
-  const backgroundNote = document.createElement("p");
-  backgroundNote.className = "timer-background-note";
-  backgroundNote.textContent =
-    "Su iPhone la notifica a schermo bloccato richiede Web Push da un server; il timer locale funziona mentre la PWA è attiva.";
-  timerPanelElement.append(backgroundNote);
-
   timerPanelElement.before(bubble);
   timerPanelElement.classList.add("is-collapsed");
 
@@ -125,9 +118,22 @@ function setupTimerBubble() {
   });
   new MutationObserver(() => {
     refreshBubble();
-    if (timerPanelElement.classList.contains("is-finished")) writeTimerState(false);
+    if (timerPanelElement.classList.contains("is-finished")) {
+      timerStartElement.textContent = "Nuovo timer";
+      writeTimerState(false);
+    }
   }).observe(timerPanelElement, { attributes: true, attributeFilter: ["class"] });
 
+  timerStartElement?.addEventListener("click", (event) => {
+    if (
+      timerRemaining <= 0 ||
+      timerPanelElement.classList.contains("is-finished")
+    ) {
+      event.stopImmediatePropagation();
+      resetTimer();
+      writeTimerState(false);
+    }
+  });
   timerStartElement?.addEventListener("click", () => setTimeout(() => writeTimerState(true)));
   timerStopElement?.addEventListener("click", () => setTimeout(() => writeTimerState(false)));
   timerResetElement?.addEventListener("click", () => setTimeout(() => writeTimerState(false)));
@@ -155,6 +161,9 @@ function setupTimerBubble() {
       "Permesso notifiche attivo. Su iOS l'avviso a schermo bloccato richiede una Web Push inviata da un server.";
   }
 
+  if (timerPanelElement.classList.contains("is-finished")) {
+    timerStartElement.textContent = "Nuovo timer";
+  }
   refreshBubble();
 }
 
