@@ -7,13 +7,23 @@ Web app mobile-first per seguire una scheda Upper/Lower di 3 giorni, registrare 
 - Scheda settimanale Upper / Lower su tre giorni
 - Prossimo allenamento calcolato in base al giorno corrente
 - Recupero predefinito di 60 secondi
-- Timer con notifica di sistema quando disponibile
+- Timer in una bolla compatta, espandibile a richiesta
+- Conto alla rovescia visibile nella bolla e ripristinato alla riapertura
+- Notifica di sistema mentre la PWA resta attiva
 - Salvataggio locale di serie, ripetizioni, carichi e note
 - Aggiunta di esercizi personalizzati
 - Selettore gratuito con più varianti coerenti per ogni esercizio
 - Anteprime animate e istruzioni da [free-exercise-db](https://github.com/yuhonas/free-exercise-db)
 - WorkoutX disponibile come guida opzionale
 - Installabile come PWA
+
+## Timer e notifiche su iPhone
+
+Il timer salva l'orario esatto di fine. Se la PWA viene sospesa e poi riaperta, il conto alla rovescia si riallinea automaticamente.
+
+iOS sospende però il JavaScript della PWA quando l'app passa in background o lo schermo si blocca. Un timer interamente locale non può quindi generare l'avviso proprio in quell'istante, anche se il permesso alle notifiche è stato concesso.
+
+Per una notifica affidabile a schermo bloccato serve una vera Web Push inviata da un server alla scadenza del timer, oppure un'app nativa che programmi una notifica locale. GitHub Pages ospita soltanto file statici e non può pianificare questi invii.
 
 ## Varianti degli esercizi
 
@@ -33,8 +43,6 @@ Le GIF WorkoutX vengono richieste con autenticazione e conservate nella cache de
 
 Apri [lukethehawk.github.io/fitness](https://lukethehawk.github.io/fitness/) dal browser del telefono e usa **Aggiungi a schermata Home** o **Installa app**.
 
-Per ricevere la notifica alla fine del recupero, concedi il permesso quando richiesto. Il supporto a schermo bloccato dipende dal sistema operativo e dalle impostazioni di risparmio energetico del browser/PWA.
-
 ## Dati
 
-Tutti i dati dell'allenamento restano nel browser del dispositivo. La cancellazione dei dati del sito rimuove anche progressi, esercizi personalizzati, cache delle guide e chiave WorkoutX salvata.
+Tutti i dati dell'allenamento restano nel browser del dispositivo. La cancellazione dei dati del sito rimuove anche progressi, esercizi personalizzati, stato del timer, cache delle guide e chiave WorkoutX salvata.
