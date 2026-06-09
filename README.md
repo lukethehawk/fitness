@@ -9,7 +9,7 @@ Web app mobile-first per seguire una scheda Upper/Lower di 3 giorni, registrare 
 - Recupero predefinito di 60 secondi
 - Timer in una bolla compatta, espandibile a richiesta
 - Conto alla rovescia visibile nella bolla e ripristinato alla riapertura
-- Notifica di sistema mentre la PWA resta attiva
+- Modalità opzionale con timer nativo iOS tramite Comandi Rapidi
 - Salvataggio locale di serie, ripetizioni, carichi e note
 - Aggiunta di esercizi personalizzati
 - Selettore gratuito con più varianti coerenti per ogni esercizio
@@ -17,13 +17,36 @@ Web app mobile-first per seguire una scheda Upper/Lower di 3 giorni, registrare 
 - WorkoutX disponibile come guida opzionale
 - Installabile come PWA
 
-## Timer e notifiche su iPhone
+## Timer iOS tramite Comandi Rapidi
+
+La modalità opzionale **Timer iOS** usa lo schema URL ufficiale `shortcuts://` per passare la durata scelta a un Comando Rapido. Non richiede backend, server, Telegram o Web Push.
+
+1. Apri l'app **Comandi Rapidi**.
+2. Crea un nuovo comando chiamato **Timer Palestra**.
+3. Configuralo per ricevere input testuale.
+4. Converti l'input del comando in un numero, se necessario.
+5. Aggiungi l'azione **Avvia timer** usando quel numero di secondi come durata.
+6. Salva il comando.
+7. Nella PWA apri **Menu**.
+8. Attiva **Usa timer nativo iOS tramite Comandi Rapidi**.
+9. Inserisci come nome comando **Timer Palestra**.
+10. Premi **Test timer iOS 10 secondi**.
+
+Quando la modalità è attiva, toccando `60s`, `90s`, `120s` o `180s` parte anche il countdown locale come riferimento visivo e viene aperto il Comando Rapido con la durata selezionata.
+
+La PWA non controlla direttamente l'app Orologio: il collegamento passa da Comandi Rapidi. iOS può mostrare una conferma o aprire l'app Comandi, ma il timer nativo è più affidabile a schermo bloccato rispetto al timer JavaScript.
+
+Il bridge usa questo formato documentato da Apple:
+
+```text
+shortcuts://run-shortcut?name=Timer%20Palestra&input=text&text=60
+```
+
+## Limite del timer web su iPhone
 
 Il timer salva l'orario esatto di fine. Se la PWA viene sospesa e poi riaperta, il conto alla rovescia si riallinea automaticamente.
 
-iOS sospende però il JavaScript della PWA quando l'app passa in background o lo schermo si blocca. Un timer interamente locale non può quindi generare l'avviso proprio in quell'istante, anche se il permesso alle notifiche è stato concesso.
-
-Per una notifica affidabile a schermo bloccato serve una vera Web Push inviata da un server alla scadenza del timer, oppure un'app nativa che programmi una notifica locale. GitHub Pages ospita soltanto file statici e non può pianificare questi invii.
+iOS può però sospendere il JavaScript quando la PWA passa in background o lo schermo si blocca. Il Comando Rapido aggira questo limite avviando il timer nativo, senza introdurre un backend.
 
 ## Varianti degli esercizi
 
@@ -45,4 +68,4 @@ Apri [lukethehawk.github.io/fitness](https://lukethehawk.github.io/fitness/) dal
 
 ## Dati
 
-Tutti i dati dell'allenamento restano nel browser del dispositivo. La cancellazione dei dati del sito rimuove anche progressi, esercizi personalizzati, stato del timer, cache delle guide e chiave WorkoutX salvata.
+Tutti i dati dell'allenamento restano nel browser del dispositivo. La cancellazione dei dati del sito rimuove anche progressi, esercizi personalizzati, impostazioni del timer iOS, cache delle guide e chiave WorkoutX salvata.
