@@ -7,6 +7,7 @@ Webapp statica mobile-first per consultare e tracciare una routine Upper / Lower
 - Tre schede: Upper A, Lower e Upper B.
 - Peso, note e serie completate salvati in `localStorage`.
 - Timer pause da 60, 90, 120 e 180 secondi con vibrazione, quando supportata.
+- Notifica di sistema alla fine del timer, quando autorizzata dal browser.
 - Esercizi personalizzati assegnabili a ciascun giorno.
 - Reset dei dati del solo giorno aperto o reset completo.
 - Dashboard con allenamento consigliato in base al giorno della settimana.
@@ -25,16 +26,16 @@ npx serve .
 ## Pubblicazione su GitHub Pages
 
 1. Crea un nuovo repository GitHub.
-2. Carica nella radice del repository `index.html`, `style.css`, `app.js` e `README.md`.
+2. Carica nella radice del repository tutti i file del progetto.
 3. Apri **Settings > Pages** nel repository.
 4. In **Build and deployment**, scegli **Deploy from a branch**.
 5. Seleziona il branch `main`, cartella `/ (root)`, quindi premi **Save**.
 6. Dopo il deploy, GitHub mostrerà l'indirizzo pubblico della webapp.
 
-Di solito l'indirizzo è:
+Per questo repository l'indirizzo previsto è:
 
 ```text
-https://NOME-UTENTE.github.io/NOME-REPOSITORY/
+https://lukethehawk.github.io/fitness/
 ```
 
 ## Modificare la scheda
@@ -56,3 +57,9 @@ L'`id` deve essere unico e non andrebbe cambiato dopo l'uso, perché collega l'e
 ## Nota sui dati
 
 I dati sono locali al browser tramite `localStorage`: non vengono sincronizzati tra dispositivi e possono essere rimossi cancellando i dati del sito dal browser.
+
+## Notifiche su iPhone
+
+Le notifiche richiedono la versione pubblicata in HTTPS, come GitHub Pages. Per il supporto migliore su iPhone, apri la pagina in Safari, usa **Condividi > Aggiungi alla schermata Home**, avvia l'app dalla Home e autorizza le notifiche quando avvii il timer.
+
+iOS può sospendere completamente le pagine web in background: senza un server push non è possibile garantire al 100% una notifica programmata a schermo spento. Se l'app resta attiva o sospesa solo brevemente, la notifica viene mostrata alla scadenza; altrimenti il timer si riallinea quando l'app torna attiva.
