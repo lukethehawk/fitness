@@ -10,12 +10,26 @@ Web app mobile-first per seguire una scheda Upper/Lower di 3 giorni, registrare 
 - Timer in una bolla compatta, espandibile a richiesta
 - Conto alla rovescia visibile nella bolla e ripristinato alla riapertura
 - Modalità opzionale con timer nativo iOS tramite Comandi Rapidi
+- Modalità modifica per serie, ordine e sostituzione degli esercizi
+- Creazione guidata per gruppo muscolare, tipologia e variante
 - Salvataggio locale di serie, ripetizioni, carichi e note
 - Aggiunta di esercizi personalizzati
 - Selettore gratuito con più varianti coerenti per ogni esercizio
 - Anteprime animate e istruzioni da [free-exercise-db](https://github.com/yuhonas/free-exercise-db)
 - WorkoutX disponibile come guida opzionale
-- Installabile come PWA
+
+## Modifica della scheda
+
+Premi **Modifica scheda** accanto al titolo dell'allenamento per:
+
+- aumentare o diminuire il numero di serie con `−` e `+`;
+- spostare un esercizio verso l'alto o verso il basso;
+- sostituire un esercizio scegliendo gruppo muscolare, tipologia e variante;
+- modificare serie e intervallo di ripetizioni.
+
+Le modifiche mantengono l'identificatore interno della card, quindi pesi, note e serie già registrate non vengono cancellati quando cambi nome, variante, numero di serie o posizione.
+
+Dal **Menu** puoi inoltre creare un nuovo esercizio partendo dal catalogo guidato. La scelta segue il percorso gruppo muscolare → tipologia → esercizio e collega automaticamente la nuova card alle immagini e alle istruzioni di `free-exercise-db`.
 
 ## Timer iOS tramite Comandi Rapidi
 
@@ -38,20 +52,6 @@ In modalità iOS il pulsante **Stop** viene nascosto, perché potrebbe fermare s
 
 Alla scadenza **Avvia** diventa **Nuovo timer**. Il primo tocco ripristina la durata selezionata senza avviare un altro timer; per partire nuovamente occorre premere **Avvia**.
 
-La webapp non controlla direttamente l'app Orologio: il collegamento passa da Comandi Rapidi. iOS può mostrare una conferma o aprire l'app Comandi, ma il timer nativo è più affidabile a schermo bloccato rispetto al timer JavaScript.
-
-Il bridge usa questo formato documentato da Apple:
-
-```text
-shortcuts://run-shortcut?name=Timer%20Palestra&input=text&text=60
-```
-
-## Limite del timer web su iPhone
-
-Il timer salva l'orario esatto di fine. Se la pagina viene sospesa e poi riaperta in Safari, il conto alla rovescia si riallinea automaticamente.
-
-iOS può però sospendere il JavaScript quando Safari passa in background o lo schermo si blocca. Il Comando Rapido aggira questo limite avviando il timer nativo, senza introdurre un backend.
-
 ## Varianti degli esercizi
 
 Premi **Esercizi** accanto a un esercizio per aprire una lista curata di movimenti coerenti. Per esempio, la categoria bicipiti propone curl con bilanciere, manubri, martello, inclinato, concentrato e ai cavi.
@@ -72,4 +72,4 @@ Apri [lukethehawk.github.io/fitness](https://lukethehawk.github.io/fitness/) dir
 
 ## Dati
 
-Tutti i dati dell'allenamento restano nel browser del dispositivo. La cancellazione dei dati del sito rimuove anche progressi, esercizi personalizzati, impostazioni del timer iOS, cache delle guide e chiave WorkoutX salvata.
+Tutti i dati dell'allenamento restano nel browser del dispositivo. La cancellazione dei dati del sito rimuove anche progressi, personalizzazioni della scheda, esercizi aggiunti, impostazioni del timer iOS, cache delle guide e chiave WorkoutX salvata.
