@@ -12,20 +12,18 @@ Web app mobile-first per seguire e personalizzare una scheda palestra di 3 giorn
 - Modalità modifica compatta per serie, riordino touch e sostituzione degli esercizi
 - Catalogo completo collegato a [free-exercise-db](https://github.com/yuhonas/free-exercise-db)
 - Lingua dei nomi degli esercizi selezionabile tra italiano e inglese
-- Esportazione della giornata in un file Markdown nominato con data e allenamento
+- Esportazione della giornata in Markdown con data e allenamento
 - Salvataggio locale di serie, ripetizioni, carichi e note
 
 ## Modifica della scheda
 
 Premi **Modifica scheda** per aumentare o diminuire le serie, modificare o trascinare un esercizio. In questa modalità compare anche il campo **Nome allenamento**, che consente di rinominare ciascuna delle tre giornate. I nomi personalizzati vengono usati nelle schede, nei menu e nell'esportazione.
 
-Durante la modifica le card diventano più sottili e mostrano soltanto nome, serie e comandi essenziali, lasciando più spazio verticale su iPhone.
-
 ## Esportazione in Joplin
 
-Il pulsante **Esporta giornata** si trova alla fine dell'elenco degli esercizi. Genera un file come `2026-06-10-lower.md`, con data, titolo della giornata, immagini, peso, serie completate e note.
+Il pulsante **Esporta giornata** genera un diario Markdown con data, titolo, immagini, peso, serie completate e note. Gli esercizi con zero serie completate vengono indicati come saltati e spostati alla fine.
 
-Gli esercizi con zero serie completate vengono indicati nel riepilogo iniziale come saltati e spostati alla fine del documento. Su iPhone la webapp prova a condividere direttamente il file `.md` con il nome corretto; se il destinatario non accetta file Markdown, usa il testo come fallback. Sono disponibili anche **Copia Markdown** e **Scarica .md**.
+Su iPhone **Condividi con Joplin** invia il Markdown come testo, modalità compatibile con l'estensione di condivisione di Joplin, usando data e allenamento come titolo. **Scarica .md** crea invece il file nominato, per esempio `2026-06-10-lower.md`. È disponibile anche **Copia Markdown**.
 
 La cartella o il taccuino di destinazione vengono scelti dentro Joplin.
 
