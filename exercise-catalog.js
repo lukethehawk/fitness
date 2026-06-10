@@ -528,72 +528,43 @@ function updateCatalogSelection() {
 
 function addSelectedCatalogExercise() {
   if (!selectedCatalogExercise) return;
-
   const day = document.querySelector("#catalogDay").value;
-  const setCount = Math.max(
-    1,
-    Math.min(12, Number(document.querySelector("#catalogSets").value) || 3)
-  );
+  const setCount = Math.max(1, Math.min(12, Number(
+    document.querySelector("#catalogSets").value
+  )));
   const reps = document.querySelector("#catalogReps").value.trim() || "8-12";
   const primaryMuscle = selectedCatalogExercise.primaryMuscles?.[0] || "";
-
   const exercise = {
     id: `custom-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     day,
-    name: selectedCatalogExercise.name,
+    name: translateExerciseName(selectedCatalogExercise.name),
     setsReps: `${setCount}x${reps}`,
     focus: [
       MUSCLE_LABELS[primaryMuscle] || primaryMuscle,
-      EQUIPMENT_LABELS[selectedCatalogExercise.equipment] || selectedCatalogExercise.equipment
+      EQUIPMENT_LABELS[selectedCatalogExercise.equipment] ||
+        selectedCatalogExercise.equipment
     ].filter(Boolean).join(" · "),
     description: "Esercizio dal catalogo free-exercise-db. Apri Esercizio per immagini e istruzioni.",
     freeExerciseId: selectedCatalogExercise.id,
-    freeExerciseName: selectedCatalogExercise.name,
     freeExerciseOriginalName: selectedCatalogExercise.name,
+    freeExerciseName: translateExerciseName(selectedCatalogExercise.name),
     freeExerciseEquipment:
       EQUIPMENT_LABELS[selectedCatalogExercise.equipment] ||
       selectedCatalogExercise.equipment ||
       "Altro",
     isCustom: true
   };
-
-  const previousIds = getAllExercises(day).map((item) => item.id);
-
   customExercises.push(exercise);
   saveCustomExercises();
-
-  if (typeof workoutEditorState !== "undefined") {
-    workoutEditorState.order ||= {};
-
-    const existingOrder = Array.isArray(workoutEditorState.order[day])
-      ? workoutEditorState.order[day].filter((id) => previousIds.includes(id))
-      : previousIds;
-
-    if (!existingOrder.includes(exercise.id)) {
-      existingOrder.push(exercise.id);
-    }
-
-    workoutEditorState.order[day] = existingOrder;
-
-    if (typeof saveWorkoutEditorState === "function") {
-      saveWorkoutEditorState();
-    }
-  }
-
+  workoutEditorState.order[day] = getAllExercises(day).map((item) => item.id);
+  saveWorkoutEditorState();
   activeDay = day;
+  renderWorkout();
+  renderCustomExerciseList();
   closeExerciseCatalog();
-
-  window.requestAnimationFrame(() => {
-    renderWorkout();
-
-    if (typeof renderCustomExerciseList === "function") {
-      renderCustomExerciseList();
-    }
-
-    document.querySelector(".workout-tabs")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+  document.querySelector(".workout-tabs")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
   });
 }
 
