@@ -14,6 +14,7 @@ Web app mobile-first per seguire una scheda Upper/Lower di 3 giorni, registrare 
 - Catalogo completo di 873 esercizi collegato a [free-exercise-db](https://github.com/yuhonas/free-exercise-db)
 - Popup con filtri per muscolo, attrezzatura e ricerca
 - Lingua dei nomi degli esercizi selezionabile tra italiano e inglese
+- Esportazione della giornata in Markdown tramite Condividi, copia o download
 - Anteprime animate prima della creazione dell'esercizio
 - Salvataggio locale di serie, ripetizioni, carichi e note
 - WorkoutX disponibile come guida opzionale
@@ -33,6 +34,12 @@ Il catalogo viene scaricato soltanto alla prima apertura e poi conservato nella 
 ## Lingua degli esercizi
 
 Dal **Menu**, nella sezione **Lingua esercizi**, puoi attivare o disattivare **Nomi in italiano**. La scelta viene salvata sul dispositivo e si applica sia al catalogo sia agli esercizi aggiunti alla scheda. Disattivando il toggle vengono ripristinati i nomi originali inglesi del database.
+
+## Esportazione in Joplin
+
+Premi **Esporta giornata** nella scheda aperta per generare un diario Markdown con data, esercizi, immagini associate, peso usato, serie completate e note. Puoi usare **Condividi** su iPhone e scegliere Joplin, copiare il Markdown oppure scaricare il file `.md`.
+
+La cartella o il taccuino di destinazione vengono scelti dentro Joplin. La webapp non salva token del Joplin Server: la Data API ufficiale appartiene al servizio Web Clipper locale dell'app desktop, mentre Joplin Server gestisce la sincronizzazione.
 
 ## Timer iOS tramite Comandi Rapidi
 
