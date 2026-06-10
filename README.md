@@ -10,12 +10,11 @@ Web app mobile-first per seguire una scheda Upper/Lower di 3 giorni, registrare 
 - Timer in una bolla compatta, espandibile a richiesta
 - Conto alla rovescia visibile nella bolla e ripristinato alla riapertura
 - Modalità opzionale con timer nativo iOS tramite Comandi Rapidi
-- Modalità modifica per serie, ordine e sostituzione degli esercizi
-- Creazione guidata per gruppo muscolare, tipologia e variante
+- Modalità modifica per serie, riordino tramite trascinamento e sostituzione degli esercizi
+- Catalogo completo di 873 esercizi collegato a [free-exercise-db](https://github.com/yuhonas/free-exercise-db)
+- Popup con filtri per muscolo, attrezzatura e ricerca
+- Anteprime animate prima della creazione dell'esercizio
 - Salvataggio locale di serie, ripetizioni, carichi e note
-- Aggiunta di esercizi personalizzati
-- Selettore gratuito con più varianti coerenti per ogni esercizio
-- Anteprime animate e istruzioni da [free-exercise-db](https://github.com/yuhonas/free-exercise-db)
 - WorkoutX disponibile come guida opzionale
 
 ## Modifica della scheda
@@ -23,13 +22,15 @@ Web app mobile-first per seguire una scheda Upper/Lower di 3 giorni, registrare 
 Premi **Modifica scheda** accanto al titolo dell'allenamento per:
 
 - aumentare o diminuire il numero di serie con `−` e `+`;
-- spostare un esercizio verso l'alto o verso il basso;
+- trascinare gli esercizi dalla maniglia per cambiarne l'ordine;
 - sostituire un esercizio scegliendo gruppo muscolare, tipologia e variante;
 - modificare serie e intervallo di ripetizioni.
 
 Le modifiche mantengono l'identificatore interno della card, quindi pesi, note e serie già registrate non vengono cancellati quando cambi nome, variante, numero di serie o posizione.
 
-Dal **Menu** puoi inoltre creare un nuovo esercizio partendo dal catalogo guidato. La scelta segue il percorso gruppo muscolare → tipologia → esercizio e collega automaticamente la nuova card alle immagini e alle istruzioni di `free-exercise-db`.
+Dal **Menu** premi **Aggiungi esercizio** per aprire il catalogo in un popup separato. Puoi filtrare per gruppo muscolare e attrezzatura, cercare per nome e guardare l'anteprima animata prima di scegliere. La nuova card viene collegata automaticamente alle immagini e alle istruzioni di `free-exercise-db`.
+
+Il catalogo viene scaricato soltanto alla prima apertura e poi conservato nella cache del browser. Comprende tutti gli 873 esercizi del database; quasi tutti i gruppi muscolari hanno almeno 10 opzioni. Il collo ne ha 9 perché questo è il numero di esercizi disponibili nel dataset sorgente.
 
 ## Timer iOS tramite Comandi Rapidi
 
@@ -54,17 +55,13 @@ Alla scadenza **Avvia** diventa **Nuovo timer**. Il primo tocco ripristina la du
 
 ## Varianti degli esercizi
 
-Premi **Esercizi** accanto a un esercizio per aprire una lista curata di movimenti coerenti. Per esempio, la categoria bicipiti propone curl con bilanciere, manubri, martello, inclinato, concentrato e ai cavi.
+Premi **Esercizi** accanto a un esercizio per aprire una lista curata di movimenti coerenti. Gli esercizi creati dal catalogo mostrano invece il pulsante **Esercizio**, che apre direttamente l'anteprima animata e le istruzioni della voce scelta.
 
 Le anteprime alternano le due immagini disponibili nel repository `free-exercise-db`: non sono GIF native, ma consentono di vedere le due fasi del movimento senza consumare richieste API. Il database è distribuito nel pubblico dominio tramite Unlicense.
-
-Le istruzioni vengono scaricate solo quando premi **Istruzioni** e poi conservate nella memoria locale del browser.
 
 ## Guide WorkoutX
 
 WorkoutX rimane disponibile come alternativa opzionale dentro il selettore delle varianti. La chiave API viene inserita dal menu dell'app e salvata esclusivamente nel browser tramite `localStorage`; non è inclusa nel repository.
-
-Le GIF WorkoutX vengono richieste con autenticazione e conservate nella cache del browser per limitare il consumo della quota mensile.
 
 ## Installazione
 
