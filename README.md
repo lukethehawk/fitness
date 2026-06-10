@@ -10,10 +10,10 @@ Web app mobile-first per seguire una scheda Upper/Lower di 3 giorni, registrare 
 - Timer in una bolla compatta, espandibile a richiesta
 - Conto alla rovescia visibile nella bolla e ripristinato alla riapertura
 - Modalità opzionale con timer nativo iOS tramite Comandi Rapidi
-- Modalità modifica per serie, riordino touch tramite trascinamento e sostituzione degli esercizi
+- Modalità modifica compatta per serie, riordino touch tramite trascinamento e sostituzione degli esercizi
 - Catalogo completo di 873 esercizi collegato a [free-exercise-db](https://github.com/yuhonas/free-exercise-db)
 - Popup con filtri per muscolo, attrezzatura e ricerca
-- Nomi del catalogo tradotti in italiano con terminologia da palestra
+- Lingua dei nomi degli esercizi selezionabile tra italiano e inglese
 - Anteprime animate prima della creazione dell'esercizio
 - Salvataggio locale di serie, ripetizioni, carichi e note
 - WorkoutX disponibile come guida opzionale
@@ -22,11 +22,17 @@ Web app mobile-first per seguire una scheda Upper/Lower di 3 giorni, registrare 
 
 Premi **Modifica scheda** accanto al titolo dell'allenamento per aumentare o diminuire le serie, modificare un esercizio oppure trascinarlo dalla maniglia per cambiarne l'ordine. Il trascinamento usa eventi touch/pointer compatibili con Safari iOS e salva automaticamente il nuovo ordine.
 
+Durante la modifica le card diventano più sottili e mostrano soltanto nome, serie e comandi essenziali. In questo modo su iPhone resta più spazio verticale per trascinare e riordinare gli esercizi.
+
 Le modifiche mantengono l'identificatore interno della card, quindi pesi, note e serie già registrate non vengono cancellati quando cambi nome, variante, numero di serie o posizione.
 
 Dal **Menu** premi **Aggiungi esercizio** per aprire il catalogo in un popup separato. Puoi filtrare per gruppo muscolare e attrezzatura e guardare l'anteprima animata prima di scegliere. La nuova card viene collegata automaticamente alle immagini e alle istruzioni di `free-exercise-db`.
 
 Il catalogo viene scaricato soltanto alla prima apertura e poi conservato nella cache del browser. Comprende tutti gli 873 esercizi del database; quasi tutti i gruppi muscolari hanno almeno 10 opzioni. Il collo ne ha 9 perché questo è il numero di esercizi disponibili nel dataset sorgente.
+
+## Lingua degli esercizi
+
+Dal **Menu**, nella sezione **Lingua esercizi**, puoi attivare o disattivare **Nomi in italiano**. La scelta viene salvata sul dispositivo e si applica sia al catalogo sia agli esercizi aggiunti alla scheda. Disattivando il toggle vengono ripristinati i nomi originali inglesi del database.
 
 ## Timer iOS tramite Comandi Rapidi
 
