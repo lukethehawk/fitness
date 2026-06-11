@@ -39,6 +39,7 @@
   document.head.append(style);
 
   if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("beta/sw.js",{scope:"./beta/"}).catch(error=>console.warn("Modalità offline beta non disponibile.",error));
+    const betaRoot=new URL("./",window.location.href);
+    navigator.serviceWorker.register(new URL("sw.js",betaRoot).href,{scope:betaRoot.pathname}).catch(error=>console.warn("Modalità offline beta non disponibile.",error));
   }
 })();
