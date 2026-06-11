@@ -1,6 +1,6 @@
 "use strict";
 (function installAppUpdates(){
-  const APP_VERSION="1.0.39";
+  const APP_VERSION="1.0.40";
   let pendingWorker=null;
   let refreshing=false;
   let updateNoticeShown=false;
