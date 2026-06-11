@@ -1,8 +1,10 @@
 "use strict";
 (function installAppUpdates(){
-  const APP_VERSION="1.0.36";
+  const APP_VERSION="1.0.37";
   let pendingWorker=null;
   let refreshing=false;
+  let updateNoticeShown=false;
+  let noticeTimer=null;
 
   function applyNeutralExportLabels(){
     const shareButton=document.querySelector("#shareWorkoutExportButton");
@@ -13,6 +15,13 @@
     return Boolean(shareButton&&exportHelp);
   }
 
+  function placeVersionUi(control){
+    const footer=document.querySelector("#workoutDayActions");
+    if(!footer)return false;
+    if(control.parentElement!==footer)footer.append(control);
+    return true;
+  }
+
   function injectVersionUi(){
     if(document.querySelector("#appVersionControl"))return;
     const control=document.createElement("aside");
@@ -20,11 +29,37 @@
     control.className="app-version-control";
     control.setAttribute("aria-label","Versione webapp");
     control.innerHTML=`<span>v${APP_VERSION}</span><button id="applyAppUpdate" type="button" hidden>Aggiorna</button>`;
-    document.body.append(control);
+    (document.querySelector("main")||document.body).append(control);
     control.querySelector("button").addEventListener("click",applyPendingUpdate);
+
+    if(!placeVersionUi(control)){
+      const placementObserver=new MutationObserver(()=>{
+        if(placeVersionUi(control))placementObserver.disconnect();
+      });
+      placementObserver.observe(document.body,{childList:true,subtree:true});
+    }
+
+    const notice=document.createElement("div");
+    notice.id="appUpdateNotice";
+    notice.className="app-update-notice";
+    notice.setAttribute("role","status");
+    notice.setAttribute("aria-live","polite");
+    notice.textContent="Nuova versione disponibile. Aggiorna dal fondo della pagina.";
+    document.body.append(notice);
+
     const style=document.createElement("style");
-    style.textContent='.app-version-control{position:fixed;z-index:18;bottom:max(7px,env(safe-area-inset-bottom));left:max(9px,env(safe-area-inset-left));display:flex;align-items:center;gap:6px;padding:4px 7px;border:1px solid rgb(43 57 52 / 72%);border-radius:999px;background:rgb(11 16 15 / 82%);color:#718079;font-size:.58rem;font-weight:750;line-height:1;box-shadow:0 5px 16px rgb(0 0 0 / 18%);backdrop-filter:blur(10px)}.app-version-control button{min-height:24px;padding:0 8px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:.62rem;font-weight:850;cursor:pointer}.app-version-control button[hidden]{display:none}.app-version-control.is-updating{color:var(--accent)}';
+    style.textContent='.app-version-control{grid-column:1/-1;justify-self:start;display:flex;align-items:center;gap:6px;margin-top:2px;padding:3px 1px;color:#718079;font-size:.58rem;font-weight:750;line-height:1}.app-version-control button{min-height:25px;padding:0 9px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:.62rem;font-weight:850;cursor:pointer}.app-version-control button[hidden]{display:none}.app-version-control.is-updating{color:var(--accent)}.app-update-notice{position:fixed;z-index:190;top:max(12px,env(safe-area-inset-top));left:50%;width:max-content;max-width:calc(100vw - 28px);padding:10px 14px;border:1px solid rgb(112 229 177 / 38%);border-radius:12px;background:#17231f;color:var(--text);font-size:.72rem;font-weight:750;line-height:1.35;text-align:center;box-shadow:0 10px 28px rgb(0 0 0 / 32%);opacity:0;pointer-events:none;transform:translate(-50%,-14px);transition:opacity .2s ease,transform .2s ease}.app-update-notice.is-visible{opacity:1;transform:translate(-50%,0)}';
     document.head.append(style);
+  }
+
+  function showUpdateNotice(){
+    if(updateNoticeShown)return;
+    updateNoticeShown=true;
+    const notice=document.querySelector("#appUpdateNotice");
+    if(!notice)return;
+    notice.classList.add("is-visible");
+    clearTimeout(noticeTimer);
+    noticeTimer=setTimeout(()=>notice.classList.remove("is-visible"),4200);
   }
 
   function showUpdate(worker){
@@ -32,6 +67,7 @@
     pendingWorker=worker;
     const button=document.querySelector("#applyAppUpdate");
     if(button){button.hidden=false;button.disabled=false;button.textContent="Aggiorna"}
+    showUpdateNotice();
   }
 
   function applyPendingUpdate(){
