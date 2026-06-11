@@ -14,7 +14,7 @@ Web app mobile-first e generica per seguire e personalizzare una scheda palestra
 - Tutte le card, incluse quelle preconfigurate, modificabili dal catalogo completo
 - Nome di ogni esercizio liberamente personalizzabile
 - Lingua dei nomi del database selezionabile tra italiano e inglese
-- Esportazione della giornata in Markdown con data e allenamento
+- Esportazione della giornata o della settimana in Markdown e Excel
 - Salvataggio locale di serie, ripetizioni, carichi e note
 
 ## Modifica della scheda
@@ -29,11 +29,15 @@ Puoi scegliere qualsiasi esercizio del database anche per sostituire una card pr
 
 Le modifiche mantengono l'identificatore interno della card, quindi pesi, note e serie già registrate non vengono cancellati quando cambi nome o esercizio.
 
-## Esportazione in Joplin
+## Esportazione
 
-Il pulsante **Esporta giornata** genera un diario Markdown con data, titolo, immagini, peso, serie completate e note. Gli esercizi con zero serie completate vengono indicati come saltati e spostati alla fine. Il nome personalizzato dell'esercizio viene esportato insieme all'immagine associata dal database.
+Il pulsante **Esporta o condividi** permette di scegliere il periodo (**Giornata** o **Settimana**) e il formato (**Markdown** o **Excel**).
 
-Su iPhone **Condividi con Joplin** invia il Markdown come testo. **Scarica .md** crea invece il file nominato con data italiana e nome dell'allenamento.
+Il Markdown genera un diario leggibile con date, titoli, immagini, peso, serie completate e note. Gli esercizi con zero serie completate vengono indicati come saltati e spostati alla fine.
+
+L'export Excel crea un vero file `.xlsx` senza immagini, con una riga per esercizio e colonne per data, giorno, allenamento, esercizio, parte del corpo, programma, serie previste e completate, peso, note e stato. Il foglio include filtri automatici e intestazione bloccata per facilitare ordinamenti e analisi.
+
+Su iPhone **Condividi** usa il foglio di condivisione quando il formato scelto è supportato. I pulsanti **Scarica .md** e **Scarica .xlsx** creano invece un file nominato in base alla giornata o alla settimana selezionata.
 
 ## Dati
 
