@@ -1,11 +1,25 @@
 "use strict";
 (function installAppUpdates(){
-  const shareButton=document.querySelector("#shareWorkoutExportButton");
-  if(shareButton)shareButton.textContent="Condividi";
+  function applyNeutralExportLabels(){
+    const shareButton=document.querySelector("#shareWorkoutExportButton");
+    const exportHelp=document.querySelector(".workout-export-help");
+    if(shareButton&&shareButton.textContent!=="Condividi")shareButton.textContent="Condividi";
+    const helpText="Condividi il testo Markdown con app di note, email, cloud e altri servizi compatibili, oppure salvalo come file.";
+    if(exportHelp&&exportHelp.textContent!==helpText)exportHelp.textContent=helpText;
+    return Boolean(shareButton&&exportHelp);
+  }
 
-  const exportHelp=document.querySelector(".workout-export-help");
-  if(exportHelp){
-    exportHelp.textContent="Condividi il testo Markdown con app di note, email, cloud e altri servizi compatibili, oppure salvalo come file.";
+  if(!applyNeutralExportLabels()){
+    let pendingLabelUpdate=false;
+    const labelObserver=new MutationObserver(()=>{
+      if(pendingLabelUpdate)return;
+      pendingLabelUpdate=true;
+      requestAnimationFrame(()=>{
+        pendingLabelUpdate=false;
+        if(applyNeutralExportLabels())labelObserver.disconnect();
+      });
+    });
+    labelObserver.observe(document.body,{childList:true,subtree:true});
   }
 
   if(!("serviceWorker" in navigator))return;
