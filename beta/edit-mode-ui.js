@@ -12,8 +12,19 @@
         .forEach(button=>button.remove());
       const remove=controls.querySelector(".exercise-remove-preset");
       if(remove){
-        remove.textContent="Rimuovi";
-        remove.setAttribute("aria-label",`Rimuovi ${card.querySelector(".exercise-name")?.textContent||"esercizio"}`);
+        const exerciseName=card.querySelector(".exercise-name")?.textContent||"esercizio";
+        remove.setAttribute("aria-label",`Rimuovi ${exerciseName}`);
+        if(!remove.classList.contains("beta-remove-ready")){
+          remove.classList.add("beta-remove-ready");
+          const label=document.createElement("span");
+          label.className="beta-remove-label";
+          label.textContent="Rimuovi";
+          const icon=document.createElement("span");
+          icon.className="beta-remove-icon";
+          icon.setAttribute("aria-hidden","true");
+          icon.textContent="×";
+          remove.replaceChildren(label,icon);
+        }
       }
       const edit=controls.querySelector(".edit-exercise-button");
       if(edit)edit.setAttribute("aria-label",`Modifica ${card.querySelector(".exercise-name")?.textContent||"esercizio"}`);
@@ -81,16 +92,19 @@
     }
     body.is-editing-workout .edit-exercise-button{margin:0!important;color:var(--accent)!important}
     body.is-editing-workout .exercise-remove-preset{
+      display:inline-flex!important;align-items:center;justify-content:center;overflow:hidden;
       min-width:auto!important;border-color:rgb(255 142 142 / 28%)!important;
       background:transparent!important;color:var(--danger)!important
     }
+    .beta-remove-icon{display:none}
     body.is-editing-workout .timer-launcher{opacity:.35;pointer-events:none}
     @media(max-width:430px){
       body.is-editing-workout .exercise-edit-controls{flex-direction:row!important}
       body.is-editing-workout .exercise-order-editor{width:auto!important;margin-left:auto!important}
       body.is-editing-workout .exercise-edit-controls button{padding:0 7px!important}
-      body.is-editing-workout .exercise-remove-preset{font-size:0!important;width:34px!important;padding:0!important}
-      body.is-editing-workout .exercise-remove-preset::after{content:"×";font-size:1rem;font-weight:900}
+      body.is-editing-workout .exercise-remove-preset{flex:0 0 34px;width:34px!important;min-width:34px!important;padding:0!important}
+      body.is-editing-workout .exercise-remove-preset .beta-remove-label{display:none!important}
+      body.is-editing-workout .exercise-remove-preset .beta-remove-icon{display:block!important;font-size:1rem;font-weight:900;line-height:1}
     }
   `;
   document.head.append(style);
