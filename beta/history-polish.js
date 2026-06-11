@@ -14,10 +14,15 @@
   observer.observe(document.body,{childList:true,subtree:true});
   removeEmptyReferences();
 
-  if(!document.querySelector('script[data-beta-set-entry]')){
+  [
+    ["beta/set-entry-ui.js?v=1","betaSetEntry"],
+    ["beta/edit-mode-ui.js?v=1","betaEditMode"]
+  ].forEach(([src,dataKey])=>{
+    const attribute=`data-${dataKey.replace(/[A-Z]/g,letter=>`-${letter.toLowerCase()}`)}`;
+    if(document.querySelector(`script[${attribute}]`))return;
     const script=document.createElement("script");
-    script.src="beta/set-entry-ui.js?v=1";
-    script.dataset.betaSetEntry="true";
+    script.src=src;
+    script.dataset[dataKey]="true";
     document.body.append(script);
-  }
+  });
 })();
