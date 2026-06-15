@@ -1,6 +1,6 @@
 "use strict";
 (function initializeBetaShell(){
-  const BETA_VERSION="0.4";
+  const BETA_VERSION="0.5";
   const banner=document.createElement("aside");
   banner.className="beta-banner";
   banner.setAttribute("aria-label","Versione sperimentale");
