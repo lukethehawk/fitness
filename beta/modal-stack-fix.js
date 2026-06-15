@@ -27,4 +27,8 @@
     event.preventDefault();
     event.stopImmediatePropagation();
   },true);
+
+  const style=document.createElement("style");
+  style.textContent=".overlay:not([hidden]){z-index:300}";
+  document.head.append(style);
 })();
