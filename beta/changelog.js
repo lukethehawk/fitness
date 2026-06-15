@@ -1,6 +1,12 @@
 "use strict";
 (function initializeBetaChangelog(){
   const RELEASES=[
+    {version:"0.5",date:"15/06/2026",items:[
+      "Aggiunti grafici di progressione per ogni esercizio salvato nello storico.",
+      "Il peso viene mostrato separatamente per ogni serie, così è possibile vedere se lo stesso carico viene mantenuto più a lungo.",
+      "Disponibili anche le viste Volume e Ripetizioni, con confronto tra primo e ultimo allenamento.",
+      "Aggiunto un riepilogo consultabile degli ultimi valori registrati."
+    ]},
     {version:"0.4",date:"15/06/2026",items:[
       "Ricerca degli esercizi resa più fluida, soprattutto durante la digitazione su smartphone.",
       "Consentito salvare allenamenti realmente ripetuti con gli stessi pesi e ripetizioni.",
