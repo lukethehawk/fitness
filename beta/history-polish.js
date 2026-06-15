@@ -8,7 +8,7 @@
     ["beta/set-entry-ui.js?v=1","betaSetEntry"],
     ["beta/edit-mode-ui.js?v=2","betaEditMode"],
     ["beta/settings-backup.js?v=2","betaSettingsBackup"],
-    ["beta/modal-stack-fix.js?v=2","betaModalStackFix"],
+    ["beta/modal-stack-fix.js?v=3","betaModalStackFix"],
     ["beta/review-hardening.js?v=1","betaReviewHardening"]
   ].forEach(([src,dataKey])=>{const attribute=`data-${dataKey.replace(/[A-Z]/g,letter=>`-${letter.toLowerCase()}`)}`;if(document.querySelector(`script[${attribute}]`))return;const script=document.createElement("script");script.src=src;script.dataset[dataKey]="true";document.body.append(script)});
 })();
