@@ -17,7 +17,8 @@
   [
     ["beta/set-entry-ui.js?v=1","betaSetEntry"],
     ["beta/edit-mode-ui.js?v=2","betaEditMode"],
-    ["beta/settings-backup.js?v=1","betaSettingsBackup"]
+    ["beta/settings-backup.js?v=1","betaSettingsBackup"],
+    ["beta/changelog.js?v=1","betaChangelog"]
   ].forEach(([src,dataKey])=>{
     const attribute=`data-${dataKey.replace(/[A-Z]/g,letter=>`-${letter.toLowerCase()}`)}`;
     if(document.querySelector(`script[${attribute}]`))return;
