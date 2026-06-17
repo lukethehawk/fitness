@@ -22,6 +22,13 @@ Fase attuale stabile:
 - Export disponibile in Markdown e Excel.
 - Catalogo esercizi collegato a free-exercise-db.
 
+Nota operativa stabile:
+
+- Verificare che numero versione, changelog, service worker/cache e interfaccia
+  siano sempre allineati prima di dichiarare una versione come stabile.
+- Le funzioni documentate nel README devono corrispondere a funzioni realmente
+  presenti e testate nel codice pubblicato.
+
 Fase attuale beta:
 
 - Versione beta: 0.5.
@@ -32,14 +39,16 @@ Fase attuale beta:
 
 Prossima fase consigliata:
 
-- Test manuale della Beta 0.5 su iPhone reale, in particolare:
-  - apertura Storico allenamenti;
-  - vista Progressione;
-  - grafico Peso per serie;
-  - cambio metrica Volume / Ripetizioni;
-  - selezione di esercizi diversi;
-  - comportamento con storico vuoto o con una sola sessione.
-- Se i test vanno bene, decidere quali funzioni beta portare nella stabile.
+Priorita immediata consigliata:
+
+- Stabilizzare il deploy GitHub Pages.
+- Chiarire se la pubblicazione ufficiale avviene tramite GitHub Actions o tramite
+  Deploy from branch.
+- Verificare e correggere il blocco/freeze durante la creazione di un nuovo
+  esercizio.
+- Testare aggiunta esercizio su iPhone reale e su Firefox desktop/mobile.
+- Verificare export Markdown, condivisione iOS, download .md ed export Excel.
+- Solo dopo completare il test Beta 0.5 sui grafici di progressione.
 
 Stack tecnico attuale:
 
@@ -71,7 +80,8 @@ Funzioni gia operative nella versione stabile:
 - nomi allenamenti modificabili;
 - giorno della settimana modificabile;
 - esercizi iniziali eliminabili o sostituibili;
-- aggiunta esercizi da catalogo;
+- catalogo esercizi e flusso di aggiunta presenti, ma da stabilizzare e
+  ritestare per il problema di blocco/freeze segnalato;
 - modifica nome esercizio;
 - aumento/diminuzione serie per esercizio;
 - riordino esercizi in modalita modifica;
@@ -80,9 +90,11 @@ Funzioni gia operative nella versione stabile:
 - timer iOS opzionale tramite Comandi Rapidi;
 - bolla timer compatta;
 - impostazioni ordinate per uso pratico;
-- export giornata e settimana in Markdown;
-- export giornata e settimana in Excel;
-- condivisione tramite share sheet del browser;
+- export giornata e settimana in Markdown presenti, da riverificare su iPhone
+  reale;
+- export giornata e settimana in Excel presenti, da riverificare su iPhone reale;
+- condivisione tramite share sheet del browser presente, da verificare nei flussi
+  iOS reali;
 - versione visibile in fondo;
 - controllo aggiornamenti e pulsante aggiorna cache;
 - popup Novita con changelog leggibile;
@@ -133,6 +145,29 @@ La direzione scelta e stata:
 
 La scelta tecnica principale e stata mantenere una webapp statica.
 Questo riduce complessita, costi e barriere per utenti non tecnici.
+
+===============================================================================
+DEPLOY / GITHUB PAGES
+===============================================================================
+
+- Il progetto e una webapp statica.
+- Se non serve una build, la modalita piu semplice e consigliata e GitHub Pages
+  con:
+  Source: Deploy from a branch
+  Branch: main
+  Folder: /root
+- Questa modalita evita workflow GitHub Actions non necessari.
+- Se si usa GitHub Actions per Pages, il workflow deve avere permessi corretti:
+  contents: read
+  pages: write
+  id-token: write
+- L'errore "Requires authentication" o status 401 in actions/deploy-pages indica
+  un problema di permessi/autenticazione del workflow, non un errore del codice
+  JavaScript.
+- I run Actions gia creati possono restare nello storico anche dopo aver
+  eliminato o disattivato un workflow.
+- Prima di nuove modifiche, definire quale metodo di deploy viene usato
+  ufficialmente.
 
 ===============================================================================
 VERSIONE STABILE - STATO FUNZIONALE
@@ -374,6 +409,17 @@ Verifiche eseguite:
 BETA 0.5 - GRAFICI DI PROGRESSIONE
 -------------------------------------------------------------------------------
 
+Stato:
+
+- Implementata ma non ancora validata su iPhone reale.
+- Non portare in stabile finche non sono completati i test su:
+  - storico vuoto;
+  - una sola sessione;
+  - molte sessioni;
+  - cambio metrica;
+  - cambio esercizio;
+  - backup/import dopo introduzione grafici.
+
 Obiettivo:
 
 - aggiungere una lettura visuale della progressione per ogni esercizio salvato
@@ -521,14 +567,15 @@ Verifiche manuali e browser:
 - test mobile viewport iPhone;
 - apertura menu;
 - ordinamento/modifica scheda;
-- aggiunta esercizio;
-- ricerca esercizi;
+- apertura catalogo esercizi: verificata in alcune condizioni;
+- ricerca esercizi: da riverificare dopo ottimizzazioni su traduzione/debounce;
+- aggiunta nuovo esercizio: funzione presente, ma emerso problema di
+  blocco/freeze da correggere e ritestare;
 - cambio lingua;
 - timer interno;
 - impostazioni timer iOS;
-- export Markdown;
-- export Excel;
-- share sheet;
+- export Markdown/Excel: funzione presente, ma da verificare su iPhone reale;
+- share sheet: funzione presente, ma da verificare su iOS reale;
 - aggiornamento cache;
 - popup Novita;
 - beta storico;
@@ -585,20 +632,47 @@ PROBLEMI NOTI / NOTE APERTE
    Ogni nuova funzione che salva dati deve essere inclusa nel backup se serve al
    ripristino.
 
+8. Problema aperto - Aggiunta nuovo esercizio.
+   In alcune condizioni l'apertura, selezione o conferma di un nuovo esercizio
+   puo causare blocchi/freeze.
+   Possibili cause:
+   - troppe renderizzazioni consecutive del catalogo;
+   - immagini animate caricate in massa;
+   - traduzione dei nomi esercizi ripetuta su molti record;
+   - renderWorkout chiamato subito dopo aggiornamento ordine/esercizi;
+   - interazione tra exercise-catalog.js, workout-editor.js,
+     universal-exercise-editor.js e dynamic-workout-days.js.
+   Prima di introdurre nuove funzioni, stabilizzare questo flusso.
+   Verificare in particolare:
+   - apertura catalogo;
+   - ricerca nel catalogo;
+   - selezione esercizio;
+   - conferma aggiunta esercizio;
+   - ritorno alla scheda;
+   - persistenza dopo reload.
+
+9. Problema aperto - Traduzioni e performance catalogo.
+   La traduzione automatica dei nomi esercizi puo impattare le performance se
+   eseguita molte volte durante filtro, ricerca e ordinamento.
+   Verificare che la cache delle traduzioni sia presente anche nella stabile,
+   non solo nella beta.
+   Verificare che la ricerca usi debounce per evitare ricalcoli a ogni singolo
+   input.
+   Evitare di ritradurre l'intero catalogo quando cambia solo la selezione
+   visiva di un esercizio.
+
 ===============================================================================
 ROADMAP CONSIGLIATA
 ===============================================================================
 
 Priorita breve:
 
-1. Completare test Beta 0.5 grafici.
-2. Migliorare la vista Progressione se emergono problemi UX.
-3. Aggiungere record personali:
-   - peso massimo;
-   - volume migliore;
-   - ripetizioni migliori.
-4. Rendere modificabile lo storico salvato.
-5. Valutare porting stabile delle funzioni beta mature.
+1. Stabilizzare deploy GitHub Pages.
+2. Correggere e testare il flusso "Aggiungi esercizio".
+3. Ottimizzare catalogo esercizi, traduzioni e selezione card.
+4. Verificare export Markdown/Excel e share sheet iOS.
+5. Completare test Beta 0.5 grafici.
+6. Solo dopo valutare porting delle funzioni beta nella stabile.
 
 Priorita media:
 
@@ -632,3 +706,27 @@ NOTE OPERATIVE PER FUTURE MODIFICHE
 - Evitare refactor grandi se non necessari.
 - Preferire funzioni semplici, testabili e reversibili.
 - Non introdurre backend finche backup/export/storico locale bastano.
+
+Regola anti-frammentazione:
+
+- Evitare di aggiungere nuovi file JavaScript per ogni micro-correzione.
+- Prima valutare se la modifica puo essere integrata nel file gia responsabile
+  della funzione.
+- Nuovi file separati vanno creati solo se introducono un modulo realmente
+  distinto.
+- Ogni nuovo script aggiunto a index.html deve avere una motivazione chiara nel
+  diario.
+- Evitare refactor grandi non necessari.
+- Preferire correzioni piccole, isolate e testabili.
+
+Regola di verifica prima di dichiarare stabile:
+
+Prima di dichiarare una funzione stabile, verificare almeno:
+
+- test su browser desktop;
+- test su iPhone reale quando la funzione riguarda uso mobile;
+- nessun errore applicativo in console;
+- comportamento corretto dopo reload;
+- dati salvati correttamente in localStorage;
+- eventuale export/share/download funzionante;
+- cache aggiornata se la modifica riguarda file statici versionati.
