@@ -1,0 +1,634 @@
+DIARIO DI SVILUPPO - FITNESS
+Ultimo aggiornamento: 2026-06-17
+
+Questo file e il diario tecnico e funzionale del progetto Fitness.
+Va aggiornato a ogni modifica futura, includendo cosa e stato cambiato, perche,
+quali scelte tecniche sono state fatte, quali verifiche sono state eseguite e
+quali limiti restano aperti.
+
+===============================================================================
+STATO RAPIDO PROGETTO
+===============================================================================
+
+Fase attuale stabile:
+
+- Versione stabile pubblica: 1.0.40.
+- Webapp pubblica: https://lukethehawk.github.io/fitness/
+- Repository: https://github.com/lukethehawk/fitness
+- App statica mobile-first in HTML, CSS e JavaScript.
+- Pubblicazione tramite GitHub Pages.
+- Nessun account, nessun backend e nessun database remoto.
+- I dati utente restano nel localStorage del browser.
+- Export disponibile in Markdown e Excel.
+- Catalogo esercizi collegato a free-exercise-db.
+
+Fase attuale beta:
+
+- Versione beta: 0.5.
+- Webapp beta: https://lukethehawk.github.io/fitness/beta/
+- La beta usa dati separati dalla versione pubblica tramite storage sandbox.
+- La beta contiene lo storico allenamenti e i grafici di progressione.
+- Le modifiche beta non sono ancora state trasferite alla versione stabile.
+
+Prossima fase consigliata:
+
+- Test manuale della Beta 0.5 su iPhone reale, in particolare:
+  - apertura Storico allenamenti;
+  - vista Progressione;
+  - grafico Peso per serie;
+  - cambio metrica Volume / Ripetizioni;
+  - selezione di esercizi diversi;
+  - comportamento con storico vuoto o con una sola sessione.
+- Se i test vanno bene, decidere quali funzioni beta portare nella stabile.
+
+Stack tecnico attuale:
+
+- HTML statico;
+- CSS custom;
+- JavaScript vanilla;
+- Service Worker per cache/offline;
+- localStorage per dati utente;
+- Web Share API per condivisione;
+- Blob/download per esportazioni;
+- file XLSX generato lato browser;
+- free-exercise-db per catalogo esercizi e immagini;
+- API WorkoutX opzionale, configurabile dall'utente;
+- bridge iOS opzionale tramite URL scheme shortcuts://.
+
+Comandi / flusso operativo:
+
+- Non esiste build locale obbligatoria.
+- La webapp e statica e viene servita da GitHub Pages.
+- La fonte aggiornata e il repository remoto GitHub.
+- Nota importante: la cartella locale C:\Users\Luca.FU\Documents\Fitness e una
+  copia vecchia e non e un checkout Git completo. Per modifiche al codice va
+  usato il repository remoto oppure va riallineato un checkout Git vero.
+
+Funzioni gia operative nella versione stabile:
+
+- scheda palestra mobile-first;
+- da 1 a 7 giorni di allenamento;
+- nomi allenamenti modificabili;
+- giorno della settimana modificabile;
+- esercizi iniziali eliminabili o sostituibili;
+- aggiunta esercizi da catalogo;
+- modifica nome esercizio;
+- aumento/diminuzione serie per esercizio;
+- riordino esercizi in modalita modifica;
+- lingua nomi esercizi italiano/inglese;
+- timer recupero interno;
+- timer iOS opzionale tramite Comandi Rapidi;
+- bolla timer compatta;
+- impostazioni ordinate per uso pratico;
+- export giornata e settimana in Markdown;
+- export giornata e settimana in Excel;
+- condivisione tramite share sheet del browser;
+- versione visibile in fondo;
+- controllo aggiornamenti e pulsante aggiorna cache;
+- popup Novita con changelog leggibile;
+- README aggiornato per l'uso pubblico.
+
+Funzioni operative nella beta:
+
+- tutto cio che esiste nella stabile;
+- sandbox dati separata dalla stabile;
+- copia dati dalla stabile alla beta;
+- storico allenamenti salvati;
+- salvataggio peso e ripetizioni per ogni singola serie;
+- progressione per esercizio;
+- riepilogo ultima prestazione nella scheda;
+- backup/import impostazioni, schede, progressi e storico;
+- hardening su backup, reset, storage, cache e popup;
+- grafici di progressione Beta 0.5.
+
+Problemi aperti principali:
+
+- Non esiste ancora sincronizzazione tra dispositivi.
+- Se il browser cancella localStorage, i dati locali vengono persi.
+- Il backup manuale e la forma piu semplice per cambiare telefono o PC.
+- La beta contiene funzioni sperimentali non ancora trasferite in produzione.
+- La Beta 0.5 dei grafici e stata implementata, ma il test browser finale e
+  stato interrotto da una richiesta successiva e va completato.
+- La traduzione automatica dei nomi esercizi non e perfetta: per questo esiste
+  il toggle lingua e ogni esercizio puo essere rinominato.
+- Su iOS il timer JavaScript non puo garantire notifiche a schermo bloccato.
+- La soluzione piu affidabile su iPhone resta il timer nativo tramite Comandi Rapidi.
+
+===============================================================================
+CONTESTO GENERALE
+===============================================================================
+
+Il progetto nasce come webapp semplice per seguire una scheda palestra personale,
+ma e stato progressivamente reso piu generico e personalizzabile.
+
+La direzione scelta e stata:
+
+- niente account;
+- niente backend obbligatorio;
+- nessun dato inviato a server dell'app;
+- uso diretto da browser o come PWA;
+- massima personalizzazione della scheda;
+- export semplice verso app esterne come Joplin, note, email, cloud o Excel;
+- beta separata per testare funzioni piu delicate senza rompere la pubblica.
+
+La scelta tecnica principale e stata mantenere una webapp statica.
+Questo riduce complessita, costi e barriere per utenti non tecnici.
+
+===============================================================================
+VERSIONE STABILE - STATO FUNZIONALE
+===============================================================================
+
+Obiettivo:
+
+- fornire una scheda palestra personalizzabile e condivisibile, utilizzabile da
+  tutti senza login e senza configurazioni tecniche.
+
+Caratteristiche principali:
+
+1. Scheda personalizzabile
+
+- La scheda non e piu vincolata a tre giorni fissi.
+- L'utente puo avere da 1 a 7 giorni di allenamento.
+- Ogni giorno puo essere rinominato.
+- Ogni giorno puo essere assegnato a un giorno della settimana.
+- Gli esercizi preconfigurati possono essere eliminati.
+- La scheda puo quindi essere ricostruita da zero.
+
+2. Modalita modifica compatta
+
+- In modalita modifica l'interfaccia diventa piu snella.
+- Ogni esercizio mostra nome, numero serie, pulsanti +/- e azioni essenziali.
+- Il drag and drop e pensato per essere piu usabile su iPhone.
+- Le card alte della modalita normale non vengono usate per il riordino.
+
+3. Catalogo esercizi
+
+- Il catalogo usa free-exercise-db.
+- Sono disponibili filtri per muscolo e attrezzatura.
+- Ogni esercizio puo mostrare immagini animate.
+- Sono previste piu varianti per gruppo muscolare.
+- L'utente puo scegliere nomi in italiano o inglese.
+- Ogni esercizio puo essere rinominato manualmente.
+
+4. Lingua esercizi
+
+- E stato aggiunto un toggle lingua nei settaggi.
+- Italiano e inglese possono essere alternati.
+- La rinomina manuale permette di correggere nomi poco naturali.
+
+5. Timer
+
+- Il timer e stato trasformato in bolla compatta.
+- Di default e impostato a 60 secondi.
+- I pulsanti 60/90/120/180 selezionano la durata.
+- Il timer parte solo con Avvia.
+- In modalita iOS shortcut, Stop viene nascosto per evitare confusione.
+- Alla scadenza il pulsante non rilancia il timer per errore.
+
+6. Timer iOS tramite Comandi Rapidi
+
+- Su iPhone, la PWA o la pagina Safari puo essere sospesa in background.
+- Per questo il timer JavaScript non garantisce notifiche affidabili.
+- E stata aggiunta una modalita opzionale:
+  shortcuts://run-shortcut?name=NOME_COMANDO&input=text&text=SECONDI
+- L'utente configura un comando rapido chiamato, ad esempio, Timer Palestra.
+- La webapp passa la durata selezionata.
+- Il timer nativo iOS gestisce l'avviso a schermo bloccato.
+
+7. Export Markdown
+
+- Export giornata.
+- Export settimana.
+- File nominato con data italiana.
+- Contiene:
+  - nome allenamento;
+  - esercizi svolti;
+  - immagini associate;
+  - peso;
+  - serie completate;
+  - note;
+  - esercizi saltati.
+- Gli esercizi saltati vengono evidenziati meglio.
+- Il pulsante e stato rinominato in Esporta o condividi / Condividi, senza
+  legarlo solo a Joplin.
+
+8. Export Excel
+
+- Export in formato .xlsx.
+- Pensato per analisi, filtri e ordinamenti.
+- Le immagini non vengono incluse.
+- Ogni esercizio occupa una riga.
+- Campi utili:
+  - data;
+  - giorno allenamento;
+  - nome allenamento;
+  - esercizio;
+  - parte del corpo;
+  - programma;
+  - serie previste;
+  - serie completate;
+  - peso;
+  - note;
+  - stato.
+
+9. Aggiornamenti e changelog
+
+- Versione visibile in basso.
+- Pulsante Novita con changelog leggibile.
+- Controllo aggiornamenti.
+- Pulsante Aggiorna che sostituisce la cache senza cancellare localStorage.
+- Versione spostata in basso nella UI mobile per non coprire l'interfaccia.
+
+10. Privacy
+
+- Nessun account.
+- Nessun server dell'app.
+- Dati salvati nel browser.
+- API key WorkoutX, se usata, resta locale.
+- Export e backup sono responsabilita dell'utente.
+
+===============================================================================
+BETA - STATO FUNZIONALE
+===============================================================================
+
+Obiettivo:
+
+- testare funzioni piu avanzate senza mettere a rischio la versione pubblica.
+
+Scelte tecniche:
+
+- La beta vive nella cartella /beta.
+- Usa la stessa base della stabile.
+- I dati sono isolati con prefisso localStorage fitness-beta:.
+- Esiste un pulsante per copiare i dati dalla stabile alla beta.
+- Esiste un reset solo beta.
+- La beta ha changelog separato.
+
+-------------------------------------------------------------------------------
+BETA 0.1 - VERSIONE DI PROVA SEPARATA
+-------------------------------------------------------------------------------
+
+Obiettivo:
+
+- creare una versione di test indipendente dalla pubblica.
+
+Funzioni:
+
+- banner Versione di prova;
+- dati separati dalla stabile;
+- pulsante Copia i miei dati;
+- reset dati beta;
+- link per tornare alla versione pubblica.
+
+Scelta:
+
+- non duplicare tutto il progetto, ma caricare la stessa base con uno storage
+  sandboxato.
+
+-------------------------------------------------------------------------------
+BETA 0.2 - STORICO ALLENAMENTI
+-------------------------------------------------------------------------------
+
+Obiettivo:
+
+- iniziare a rispondere all'esigenza di vedere la progressione nel tempo.
+
+Funzioni:
+
+- salvataggio allenamento completato;
+- storico allenamenti;
+- vista progressione per esercizio;
+- riepilogo dell'ultima prestazione nella scheda;
+- peso e ripetizioni salvati per ogni serie.
+
+Motivazione:
+
+- l'utente deve poter vedere se sta migliorando non solo sul peso massimo, ma
+  anche nella capacita di mantenere carico e ripetizioni sulle serie successive.
+
+-------------------------------------------------------------------------------
+BETA 0.3 - UX COMPILAZIONE E BACKUP
+-------------------------------------------------------------------------------
+
+Obiettivo:
+
+- migliorare la compilazione dei dati e rendere trasferibile la configurazione.
+
+Funzioni:
+
+- compilazione serie per serie;
+- rimozione del campo peso generico;
+- selezione serie e inserimento kg/rep;
+- backup JSON di schede, impostazioni, progressi e storico;
+- import backup su altro dispositivo;
+- modalita modifica piu compatta;
+- correzione visuale del pulsante rimuovi su mobile.
+
+Scelta:
+
+- il backup manuale e stato preferito al self-hosting in questa fase, perche e
+  piu semplice per utenti non tecnici.
+
+-------------------------------------------------------------------------------
+BETA 0.4 - HARDENING DOPO REVIEW
+-------------------------------------------------------------------------------
+
+Obiettivo:
+
+- correggere i problemi emersi da una review tecnica esterna.
+
+Interventi principali:
+
+- ricerca esercizi piu fluida con debounce;
+- riduzione freeze durante digitazione;
+- sessioni identiche salvabili se avvengono in momenti diversi;
+- reset piu sicuro e coerente;
+- protezione del backup importato;
+- esclusione chiavi API dal backup;
+- gestione piu robusta di popup sovrapposti;
+- timeout su richieste esterne;
+- limiti alle cache locali;
+- avviso se lo storage locale e quasi pieno;
+- export piu coerenti con lingua scelta;
+- pesi Excel convertiti in numeri;
+- CSP per mitigare markup/script pericolosi;
+- cache beta aggiornata.
+
+Nota review:
+
+- Il problema segnalato sul drag in drag-fix.js era un falso positivo per la
+  beta corrente: quel file e un fallback disattivato. Il drag attivo aggiorna lo
+  stato in memoria.
+
+Verifiche eseguite:
+
+- caricamento beta in viewport mobile;
+- console senza errori applicativi;
+- apertura menu;
+- apertura catalogo;
+- correzione popup sopra il banner beta;
+- chiusura catalogo;
+- controllo versione Beta 0.4.
+
+-------------------------------------------------------------------------------
+BETA 0.5 - GRAFICI DI PROGRESSIONE
+-------------------------------------------------------------------------------
+
+Obiettivo:
+
+- aggiungere una lettura visuale della progressione per ogni esercizio salvato
+  nello storico.
+
+Funzioni implementate:
+
+- grafico nella vista Progressione;
+- metrica Peso per serie;
+- metrica Volume;
+- metrica Ripetizioni;
+- riepilogo:
+  - numero allenamenti;
+  - primo valore;
+  - ultimo valore;
+  - variazione;
+- dettaglio consultabile delle ultime sessioni.
+
+Scelta UX:
+
+- il primo grafico non mostra solo il peso massimo.
+- La vista Peso per serie usa linee separate per Serie 1, Serie 2, Serie 3 ecc.
+- Questo permette di vedere se l'utente mantiene lo stesso peso su piu serie,
+  che e uno dei segnali piu utili di progressione reale.
+
+Scelta tecnica:
+
+- nessuna libreria grafica esterna;
+- SVG generato in JavaScript;
+- dati letti dallo storico beta in localStorage;
+- DOM costruito con textContent/createElement per ridurre rischio markup;
+- modulo separato beta/progress-charts.js;
+- caricamento tramite beta/history-polish.js;
+- versione beta aggiornata a 0.5;
+- cache beta aggiornata a fitness-beta-v8;
+- changelog beta aggiornato.
+
+Verifiche:
+
+- Implementazione pubblicata su GitHub.
+- Il test browser mobile era stato avviato ma e stato interrotto dalla richiesta
+  di creare questo diario.
+- Da completare: verifica reale della vista Progressione su beta online.
+
+===============================================================================
+SCELTE TECNICHE IMPORTANTI
+===============================================================================
+
+1. App statica
+
+- Pro:
+  - semplice da pubblicare;
+  - nessun costo server;
+  - facile da usare;
+  - buona per open source;
+  - non richiede login.
+- Contro:
+  - niente sincronizzazione automatica;
+  - storico legato al dispositivo/browser;
+  - localStorage puo essere cancellato.
+
+2. localStorage
+
+- Usato per impostazioni, schede, progressi e storico beta.
+- Sufficiente per una webapp semplice.
+- Richiede backup/import per cambio dispositivo.
+
+3. free-exercise-db
+
+- Usato per catalogo e immagini esercizi.
+- Permette di evitare richieste continue a servizi a pagamento.
+- La qualita dei nomi italiani puo richiedere correzione manuale.
+
+4. WorkoutX API
+
+- Supportata come opzione.
+- La chiave API viene salvata solo localmente.
+- Non e inclusa nei backup.
+- Dopo l'adozione di free-exercise-db e diventata meno centrale.
+
+5. Timer iOS
+
+- Non e possibile garantire notifiche affidabili solo con JavaScript su iPhone.
+- La soluzione scelta e un bridge opzionale verso Comandi Rapidi.
+- L'utente usa il timer nativo iOS, piu affidabile a schermo bloccato.
+
+6. Export invece di sincronizzazione
+
+- Export Markdown ed Excel permettono di portare i dati fuori dall'app.
+- Backup/import aiuta cambio telefono o PC.
+- Il self-hosting con SQLite resta idea futura, non prioritaria.
+
+===============================================================================
+FILE / AREE PRINCIPALI DEL PROGETTO
+===============================================================================
+
+Versione stabile:
+
+- index.html
+- app.js
+- style.css
+- enhancements.js
+- timer-ui.js
+- ios-shortcuts-timer.js
+- exercise-catalog.js
+- catalog-detail.js
+- workout-editor.js
+- compact-edit-mode.js
+- universal-exercise-editor.js
+- dynamic-workout-days.js
+- language-settings.js
+- settings-order.js
+- workout-export.js
+- workout-xlsx.js
+- workout-layout.js
+- version/update/changelog script della stabile
+- manifest.webmanifest
+- sw.js
+- README.md
+
+Versione beta:
+
+- beta/index.html
+- beta/storage-sandbox.js
+- beta/beta-shell.js
+- beta/workout-history.js
+- beta/history-polish.js
+- beta/set-entry-ui.js
+- beta/edit-mode-ui.js
+- beta/settings-backup.js
+- beta/modal-stack-fix.js
+- beta/review-hardening.js
+- beta/progress-charts.js
+- beta/changelog.js
+- beta/sw.js
+
+===============================================================================
+VERIFICHE ESEGUITE NEL TEMPO
+===============================================================================
+
+Verifiche manuali e browser:
+
+- apertura versione pubblica;
+- apertura beta;
+- test mobile viewport iPhone;
+- apertura menu;
+- ordinamento/modifica scheda;
+- aggiunta esercizio;
+- ricerca esercizi;
+- cambio lingua;
+- timer interno;
+- impostazioni timer iOS;
+- export Markdown;
+- export Excel;
+- share sheet;
+- aggiornamento cache;
+- popup Novita;
+- beta storico;
+- beta backup/import;
+- beta modal stack.
+
+Verifiche specifiche note:
+
+- La chiusura del catalogo in beta era bloccata dal banner Versione di prova che
+  stava sopra al popup. Risolto portando gli overlay sopra il banner.
+- La ricerca nell'editor era pesante perche traduceva e ordinava molti esercizi
+  a ogni tasto. Risolto con cache e debounce.
+- Il reset completo poteva avere listener separati. In beta e stato reso piu
+  coerente.
+- I pesi Excel sono stati convertiti a numeri per analisi migliori.
+
+Verifiche ancora da completare:
+
+- test completo Beta 0.5 grafici su iPhone;
+- test con storico vuoto;
+- test con una sola sessione;
+- test con molte sessioni;
+- test backup/import dopo introduzione grafici;
+- eventuale porting delle funzioni beta nella stabile.
+
+===============================================================================
+PROBLEMI NOTI / NOTE APERTE
+===============================================================================
+
+1. Nessuna sincronizzazione automatica.
+   I dati restano nel browser. Per cambio dispositivo usare backup/import oppure
+   export.
+
+2. localStorage non e un database.
+   Va bene per uso semplice, ma non e ideale per storico molto lungo o multi-device.
+
+3. Self-hosting rimandato.
+   L'idea di una versione con SQLite/server esterno e interessante, ma per ora
+   viene dopo soluzioni semplici come backup, export e storico locale.
+
+4. iOS sospende JavaScript.
+   Le notifiche del timer interno non possono essere affidabili a schermo
+   bloccato. Il workaround consigliato resta Comandi Rapidi.
+
+5. Traduzioni esercizi.
+   Alcune traduzioni automatiche non sono perfette. Per questo esiste toggle
+   lingua e rinomina manuale.
+
+6. Beta non ancora stabile.
+   Lo storico e i grafici sono in prova. Prima di portarli in produzione servono
+   test reali.
+
+7. Backup/import da mantenere aggiornato.
+   Ogni nuova funzione che salva dati deve essere inclusa nel backup se serve al
+   ripristino.
+
+===============================================================================
+ROADMAP CONSIGLIATA
+===============================================================================
+
+Priorita breve:
+
+1. Completare test Beta 0.5 grafici.
+2. Migliorare la vista Progressione se emergono problemi UX.
+3. Aggiungere record personali:
+   - peso massimo;
+   - volume migliore;
+   - ripetizioni migliori.
+4. Rendere modificabile lo storico salvato.
+5. Valutare porting stabile delle funzioni beta mature.
+
+Priorita media:
+
+1. Calendario allenamenti.
+2. Suggerimenti di progressione.
+3. Confronto tra due sessioni dello stesso esercizio.
+4. Import storico da CSV/Excel.
+5. Unita kg/lb opzionale.
+
+Priorita lunga:
+
+1. Storico piu robusto con IndexedDB.
+2. Sincronizzazione opzionale.
+3. Eventuale self-hosting con backend leggero e SQLite.
+4. Eventuale API per collegare un server personale tramite URL e chiave.
+
+===============================================================================
+NOTE OPERATIVE PER FUTURE MODIFICHE
+===============================================================================
+
+- Non lavorare sulla cartella locale vecchia come fonte unica.
+- Prima di modificare codice, leggere il repository remoto aggiornato.
+- Tenere separate stabile e beta.
+- Aggiornare sempre:
+  - versione;
+  - changelog;
+  - service worker/cache;
+  - README se la modifica riguarda utenti finali;
+  - questo diario.
+- Per modifiche delicate, implementare prima in beta.
+- Evitare refactor grandi se non necessari.
+- Preferire funzioni semplici, testabili e reversibili.
+- Non introdurre backend finche backup/export/storico locale bastano.
