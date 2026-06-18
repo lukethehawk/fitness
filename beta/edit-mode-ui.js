@@ -31,8 +31,113 @@
     });
   }
 
+  function currentEditingExercise(){
+    if(typeof editingExerciseId==="undefined"||!editingExerciseId||typeof getAllExercises!=="function")return null;
+    return getAllExercises(activeDay).find(exercise=>exercise.id===editingExerciseId)||null;
+  }
+
+  function ensureBetaExerciseFields(){
+    const fields=document.querySelector(".universal-editor-fields");
+    if(!fields)return null;
+    let extra=fields.querySelector(".beta-editor-extra-fields");
+    if(extra)return extra;
+    extra=document.createElement("section");
+    extra.className="beta-editor-extra-fields";
+    extra.innerHTML=`
+      <div class="beta-editor-extra-heading"><strong>Valori base beta</strong><span>Usati per precompilare una nuova sessione.</span></div>
+      <div class="beta-editor-extra-grid">
+        <label>Peso base<input id="betaEditorBaseWeight" type="number" min="0" step="0.5" inputmode="decimal" placeholder="kg"></label>
+        <label>Ripetizioni base<input id="betaEditorBaseReps" type="number" min="0" step="1" inputmode="numeric" placeholder="rep"></label>
+      </div>
+      <label>Recupero automatico<select id="betaEditorRestPreset"><option value="0">No, non avviare timer</option><option value="60">60 secondi</option><option value="90">90 secondi</option><option value="120">120 secondi</option><option value="180">180 secondi</option><option value="custom">Personalizzato</option></select></label>
+      <label id="betaEditorCustomRestLabel" hidden>Secondi recupero<input id="betaEditorCustomRest" type="number" min="10" max="900" step="5" inputmode="numeric" placeholder="secondi"></label>
+      <label>Note base<textarea id="betaEditorBaseNotes" rows="3" placeholder="Note che vuoi ritrovare gia pronte in una nuova sessione"></textarea></label>
+    `;
+    fields.append(extra);
+    const restPreset=extra.querySelector("#betaEditorRestPreset");
+    const customLabel=extra.querySelector("#betaEditorCustomRestLabel");
+    restPreset.addEventListener("change",()=>{
+      customLabel.hidden=restPreset.value!=="custom";
+    });
+    return extra;
+  }
+
+  function populateBetaExerciseFields(exercise=currentEditingExercise()){
+    const extra=ensureBetaExerciseFields();
+    if(!extra||!exercise)return;
+    const base=Array.isArray(exercise.baseSetDetails)?exercise.baseSetDetails:[];
+    const firstBase=base.find(item=>item?.weight||item?.reps)||base[0]||{};
+    extra.querySelector("#betaEditorBaseWeight").value=firstBase.weight||"";
+    extra.querySelector("#betaEditorBaseReps").value=firstBase.reps||"";
+    extra.querySelector("#betaEditorBaseNotes").value=exercise.baseNotes||"";
+
+    const rest=Number(exercise.restSeconds||0);
+    const restPreset=extra.querySelector("#betaEditorRestPreset");
+    const customLabel=extra.querySelector("#betaEditorCustomRestLabel");
+    const customInput=extra.querySelector("#betaEditorCustomRest");
+    if([60,90,120,180].includes(rest)){
+      restPreset.value=String(rest);
+      customInput.value="";
+      customLabel.hidden=true;
+    }else if(rest>0){
+      restPreset.value="custom";
+      customInput.value=String(rest);
+      customLabel.hidden=false;
+    }else{
+      restPreset.value="0";
+      customInput.value="";
+      customLabel.hidden=true;
+    }
+  }
+
+  function readBetaExerciseFields(setCount){
+    const extra=ensureBetaExerciseFields();
+    if(!extra)return{};
+    const weight=extra.querySelector("#betaEditorBaseWeight")?.value?.trim()||"";
+    const reps=extra.querySelector("#betaEditorBaseReps")?.value?.trim()||"";
+    const notes=extra.querySelector("#betaEditorBaseNotes")?.value?.trim()||"";
+    const restPreset=extra.querySelector("#betaEditorRestPreset")?.value||"0";
+    const customRest=Number(extra.querySelector("#betaEditorCustomRest")?.value||0);
+    const restSeconds=restPreset==="custom"?Math.max(0,customRest):Number(restPreset||0);
+    const count=Math.max(1,Math.min(12,Number(setCount)||1));
+    return{
+      baseSetDetails:weight||reps?Array.from({length:count},()=>({weight,reps})):[],
+      baseNotes:notes,
+      restSeconds:Number.isFinite(restSeconds)?restSeconds:0,
+    };
+  }
+
+  function installBetaExerciseEditorExtras(){
+    if(window.__betaExerciseEditorExtrasInstalled)return;
+    if(typeof openExerciseEditor!=="function"||typeof saveUniversalExercise!=="function")return;
+    window.__betaExerciseEditorExtrasInstalled=true;
+
+    const openBeforeBeta=openExerciseEditor;
+    openExerciseEditor=async function openBetaExerciseEditor(exercise){
+      const result=await openBeforeBeta(exercise);
+      populateBetaExerciseFields(exercise);
+      return result;
+    };
+
+    const saveBeforeBeta=saveUniversalExercise;
+    saveUniversalExercise=function saveBetaUniversalExercise(){
+      const id=typeof editingExerciseId!=="undefined"?editingExerciseId:"";
+      const setCount=document.querySelector("#editorSetCount")?.value||1;
+      const extra=readBetaExerciseFields(setCount);
+      saveBeforeBeta();
+      if(!id||typeof workoutEditorState==="undefined"||typeof saveWorkoutEditorState!=="function")return;
+      workoutEditorState.overrides=workoutEditorState.overrides||{};
+      workoutEditorState.overrides[id]={...(workoutEditorState.overrides[id]||{}),...extra};
+      saveWorkoutEditorState();
+      if(typeof renderWorkout==="function")renderWorkout();
+    };
+
+    ensureBetaExerciseFields();
+  }
+
   function refresh(){
     cleanEditControls();
+    installBetaExerciseEditorExtras();
     const editing=document.body.classList.contains("is-editing-workout");
     document.querySelector("#exerciseList")?.setAttribute("aria-label",editing?"Riordina e modifica gli esercizi":"Esercizi allenamento");
   }
@@ -98,6 +203,11 @@
     }
     .beta-remove-icon{display:none}
     body.is-editing-workout .timer-launcher{opacity:.35;pointer-events:none}
+    .beta-editor-extra-fields{grid-column:1/-1;display:grid;gap:10px;margin-top:4px;padding-top:12px;border-top:1px solid var(--border)}
+    .beta-editor-extra-heading{display:grid;gap:2px}.beta-editor-extra-heading strong{color:var(--accent);font-size:.82rem}.beta-editor-extra-heading span{color:var(--muted);font-size:.68rem}
+    .beta-editor-extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .beta-editor-extra-fields textarea{width:100%;min-height:78px;margin-top:5px;padding:8px 11px;border:1px solid var(--border);border-radius:11px;background:var(--bg);color:var(--text);resize:vertical}
+    @media(max-width:640px){.universal-editor-fields input,.universal-editor-fields select,.universal-editor-fields textarea,.universal-editor-filters input,.universal-editor-filters select{font-size:16px!important}}
     @media(max-width:430px){
       body.is-editing-workout .exercise-edit-controls{flex-direction:row!important}
       body.is-editing-workout .exercise-order-editor{width:auto!important;margin-left:auto!important}
@@ -105,6 +215,7 @@
       body.is-editing-workout .exercise-remove-preset{flex:0 0 34px;width:34px!important;min-width:34px!important;padding:0!important}
       body.is-editing-workout .exercise-remove-preset .beta-remove-label{display:none!important}
       body.is-editing-workout .exercise-remove-preset .beta-remove-icon{display:block!important;font-size:1rem;font-weight:900;line-height:1}
+      .beta-editor-extra-grid{grid-template-columns:1fr}
     }
   `;
   document.head.append(style);
