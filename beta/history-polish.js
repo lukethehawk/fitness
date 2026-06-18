@@ -5,7 +5,7 @@
   const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;removeEmptyReferences()})});
   observer.observe(document.body,{childList:true,subtree:true});removeEmptyReferences();
   [
-    ["beta/set-entry-ui.js?v=4","betaSetEntry"],
+    ["beta/set-entry-ui.js?v=5","betaSetEntry"],
     ["beta/edit-mode-ui.js?v=3","betaEditMode"],
     ["beta/settings-backup.js?v=2","betaSettingsBackup"],
     ["beta/modal-stack-fix.js?v=3","betaModalStackFix"],
