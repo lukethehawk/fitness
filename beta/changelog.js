@@ -1,6 +1,11 @@
 "use strict";
 (function initializeBetaChangelog(){
   const RELEASES=[
+    {version:"0.11",date:"18/06/2026",items:[
+      "Corretto il colore accento nei bordi dei campi selezionati e negli stati di focus.",
+      "Il tracker delle serie ora usa il colore scelto anche per glow, sfondi leggeri e pulsanti di completamento.",
+      "I colori come Ambra, Blu o Viola risultano più coerenti in tutta la scheda beta."
+    ]},
     {version:"0.10",date:"18/06/2026",items:[
       "Aggiunto un selettore visivo del colore accento sotto al toggle del tema alto contrasto.",
       "Il colore scelto aggiorna pulsanti, dettagli ed evidenziazioni sia nel tema base sia nel tema alto contrasto.",
