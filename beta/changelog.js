@@ -1,6 +1,11 @@
 "use strict";
 (function initializeBetaChangelog(){
   const RELEASES=[
+    {version:"0.9",date:"18/06/2026",items:[
+      "Aggiunta una modalità visiva ad alto contrasto, attivabile dal menu, per testare una UI meno decorativa e più leggibile.",
+      "Il nuovo tema riduce gradienti, ombre e trasparenze, rendendo card, pulsanti e campi più separati visivamente.",
+      "Il tema attuale resta disponibile: il toggle permette di confrontare le due varianti senza perdere preferenze o dati."
+    ]},
     {version:"0.8",date:"18/06/2026",items:[
       "I valori base di peso e ripetizioni ora vengono preinseriti nella scheda quando la serie è ancora vuota.",
       "I valori precompilati restano modificabili durante l'allenamento, come in una scheda cartacea compilata e corretta al bisogno.",
