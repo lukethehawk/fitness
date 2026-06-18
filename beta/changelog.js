@@ -1,6 +1,11 @@
 "use strict";
 (function initializeBetaChangelog(){
   const RELEASES=[
+    {version:"0.10",date:"18/06/2026",items:[
+      "Aggiunto un selettore visivo del colore accento sotto al toggle del tema alto contrasto.",
+      "Il colore scelto aggiorna pulsanti, dettagli ed evidenziazioni sia nel tema base sia nel tema alto contrasto.",
+      "La scelta avviene tramite colori e nomi semplici, senza codici tecnici."
+    ]},
     {version:"0.9",date:"18/06/2026",items:[
       "Aggiunta una modalità visiva ad alto contrasto, attivabile dal menu, per testare una UI meno decorativa e più leggibile.",
       "Il nuovo tema riduce gradienti, ombre e trasparenze, rendendo card, pulsanti e campi più separati visivamente.",
