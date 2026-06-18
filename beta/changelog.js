@@ -1,6 +1,13 @@
 "use strict";
 (function initializeBetaChangelog(){
   const RELEASES=[
+    {version:"0.6",date:"18/06/2026",items:[
+      "Compilazione dell'allenamento più comoda su iPhone: niente zoom automatico nei campi e passaggio rapido alla serie successiva.",
+      "Gli esercizi completati si richiudono da soli, così la scheda resta più pulita durante l'allenamento.",
+      "Prima di salvare puoi indicare la data e il giorno reale in cui hai fatto l'allenamento, anche se la scheda era programmata per un altro giorno.",
+      "Ogni esercizio può avere peso, ripetizioni, note e recupero predefiniti per partire più velocemente nella sessione successiva.",
+      "Il recupero automatico può avviare il timer interno o, se configurato, il timer iOS tramite Comandi Rapidi."
+    ]},
     {version:"0.5",date:"15/06/2026",items:[
       "Aggiunti grafici di progressione per ogni esercizio salvato nello storico.",
       "Il peso viene mostrato separatamente per ogni serie, così è possibile vedere se lo stesso carico viene mantenuto più a lungo.",
