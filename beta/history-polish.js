@@ -5,8 +5,8 @@
   const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;removeEmptyReferences()})});
   observer.observe(document.body,{childList:true,subtree:true});removeEmptyReferences();
   [
-    ["beta/set-entry-ui.js?v=1","betaSetEntry"],
-    ["beta/edit-mode-ui.js?v=2","betaEditMode"],
+    ["beta/set-entry-ui.js?v=2","betaSetEntry"],
+    ["beta/edit-mode-ui.js?v=3","betaEditMode"],
     ["beta/settings-backup.js?v=2","betaSettingsBackup"],
     ["beta/modal-stack-fix.js?v=3","betaModalStackFix"],
     ["beta/review-hardening.js?v=1","betaReviewHardening"],
