@@ -1,6 +1,11 @@
 "use strict";
 (function initializeBetaChangelog(){
   const RELEASES=[
+    {version:"0.8",date:"18/06/2026",items:[
+      "I valori base di peso e ripetizioni ora vengono preinseriti nella scheda quando la serie è ancora vuota.",
+      "I valori precompilati restano modificabili durante l'allenamento, come in una scheda cartacea compilata e corretta al bisogno.",
+      "La precompilazione non sovrascrive pesi o ripetizioni già modificati nella sessione corrente."
+    ]},
     {version:"0.7",date:"18/06/2026",items:[
       "Interfaccia della scheda più pulita durante l'allenamento: rimane visibile solo la compilazione serie-per-serie.",
       "Rimosso dalla pagina principale il pulsante per salvare i valori base, che ora restano nella modifica esercizio.",
