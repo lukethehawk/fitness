@@ -22,6 +22,11 @@
       }
     }
 
+    .exercise-card:has(.beta-set-tracker) .exercise-fields,
+    .exercise-card .exercise-fields[hidden] {
+      display: none !important;
+    }
+
     .beta-set-entry {
       margin-top: 12px;
       border: 1px solid rgba(120, 232, 165, 0.18);
@@ -50,23 +55,10 @@
       gap: 2px;
     }
 
-    .beta-set-chip strong {
-      font-size: 0.84rem;
-    }
-
-    .beta-set-chip small {
-      color: var(--muted, #a7b1ac);
-      font-size: 0.72rem;
-    }
-
-    .beta-set-chip.is-active {
-      border-color: var(--accent, #78e8a5);
-      box-shadow: 0 0 0 1px rgba(120,232,165,0.25);
-    }
-
-    .beta-set-chip.is-done {
-      background: rgba(120,232,165,0.12);
-    }
+    .beta-set-chip strong { font-size: 0.84rem; }
+    .beta-set-chip small { color: var(--muted, #a7b1ac); font-size: 0.72rem; }
+    .beta-set-chip.is-active { border-color: var(--accent, #78e8a5); box-shadow: 0 0 0 1px rgba(120,232,165,0.25); }
+    .beta-set-chip.is-done { background: rgba(120,232,165,0.12); }
 
     .beta-active-set {
       display: grid;
@@ -84,10 +76,7 @@
       gap: 10px;
     }
 
-    .beta-active-heading strong {
-      color: var(--text, #f5f5f5);
-      font-size: 0.86rem;
-    }
+    .beta-active-heading strong { color: var(--text, #f5f5f5); font-size: 0.86rem; }
 
     .beta-active-fields {
       display: grid;
@@ -113,8 +102,7 @@
       min-height: 42px;
     }
 
-    .beta-active-complete,
-    .beta-save-base-values {
+    .beta-active-complete {
       width: 100%;
       border-radius: 12px;
       min-height: 42px;
@@ -123,13 +111,6 @@
       color: var(--accent, #78e8a5);
       font-weight: 800;
       cursor: pointer;
-    }
-
-    .beta-save-base-values {
-      border-color: rgba(255,255,255,0.12);
-      color: var(--muted, #a7b1ac);
-      min-height: 38px;
-      font-size: 0.82rem;
     }
 
     .beta-card-summary {
@@ -145,20 +126,9 @@
       cursor: pointer;
     }
 
-    .beta-card-summary strong {
-      display: block;
-      font-size: 0.92rem;
-      margin-bottom: 3px;
-    }
-
-    .beta-card-summary span {
-      color: var(--muted, #a7b1ac);
-      font-size: 0.78rem;
-    }
-
-    .exercise-card.beta-exercise-collapsed .beta-card-summary {
-      display: block;
-    }
+    .beta-card-summary strong { display: block; font-size: 0.92rem; margin-bottom: 3px; }
+    .beta-card-summary span { color: var(--muted, #a7b1ac); font-size: 0.78rem; }
+    .exercise-card.beta-exercise-collapsed .beta-card-summary { display: block; }
 
     .exercise-card.beta-exercise-collapsed .exercise-focus,
     .exercise-card.beta-exercise-collapsed .exercise-description,
@@ -171,9 +141,7 @@
     }
 
     @media (max-width: 520px) {
-      .beta-active-fields {
-        grid-template-columns: 1fr;
-      }
+      .beta-active-fields { grid-template-columns: 1fr; }
     }
   `;
   document.head.appendChild(style);
@@ -320,35 +288,6 @@
     }
   }
 
-  function saveBaseValues(tracker) {
-    if (typeof workoutEditorState === "undefined" || typeof saveWorkoutEditorState !== "function") {
-      alert("La modifica dei valori base non e' disponibile in questa sessione.");
-      return;
-    }
-
-    const exercise = exerciseForTracker(tracker);
-    if (!exercise) return;
-
-    const baseSetDetails = rowsFromTracker(tracker).map((row) => {
-      const data = rowData(row);
-      return {
-        weight: data.weight?.value?.trim() || "",
-        reps: data.reps?.value?.trim() || "",
-      };
-    });
-    const notes = tracker.closest(".exercise-card")?.querySelector(".exercise-notes textarea")?.value?.trim() || "";
-
-    workoutEditorState.overrides = workoutEditorState.overrides || {};
-    workoutEditorState.overrides[exercise.id] = {
-      ...(workoutEditorState.overrides[exercise.id] || {}),
-      baseSetDetails,
-      baseNotes: notes,
-      restSeconds: Number(exercise.restSeconds || workoutEditorState.overrides[exercise.id]?.restSeconds || 0),
-    };
-    saveWorkoutEditorState();
-    alert("Valori base aggiornati per questo esercizio.");
-  }
-
   function enhance(tracker) {
     if (tracker.dataset.betaCompact === "true") return;
     tracker.dataset.betaCompact = "true";
@@ -356,6 +295,7 @@
     const rows = rowsFromTracker(tracker);
     if (!rows.length) return;
 
+    tracker.closest(".exercise-card")?.querySelector(".exercise-fields")?.setAttribute("hidden", "");
     tracker.querySelectorAll(".beta-set-row").forEach((row) => {
       row.style.display = "none";
     });
@@ -398,7 +338,6 @@
             </label>
           </div>
           <button type="button" class="beta-active-complete">${active.done ? "Riapri serie" : "Segna serie completata"}</button>
-          <button type="button" class="beta-save-base-values">Salva come valori base</button>
         </div>
       `;
 
@@ -443,8 +382,6 @@
         render(true);
         updateCollapsedState(tracker, false);
       });
-
-      entry.querySelector(".beta-save-base-values").addEventListener("click", () => saveBaseValues(tracker));
 
       updateCollapsedState(tracker, false);
 
