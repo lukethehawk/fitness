@@ -1,94 +1,474 @@
-"use strict";
-(function initializeBetaSetEntryUi(){
-  let scheduled=false;
+(function () {
+  if (window.__betaSetEntryUi) return;
+  window.__betaSetEntryUi = true;
 
-  function dispatchInput(input,value){
-    input.value=value;
-    input.dispatchEvent(new Event("input",{bubbles:true}));
-  }
+  const IOS_TIMER_SETTINGS_KEY = "fitness-ios-shortcut-timer-v1";
+  const TIMER_DEBOUNCE_MS = 1200;
+  let lastAutoTimer = { key: "", at: 0 };
 
-  function enhanceTracker(tracker){
-    if(tracker.dataset.compactEntryReady==="true")return;
-    const rows=[...tracker.querySelectorAll(".beta-set-row")];
-    if(!rows.length)return;
-
-    tracker.dataset.compactEntryReady="true";
-    tracker.classList.add("beta-set-tracker-compact");
-    const heading=tracker.querySelector(".beta-set-heading");
-    if(heading){
-      heading.querySelector("strong").textContent="Registra le serie";
-      heading.querySelector("span").textContent="Seleziona una serie, poi inserisci kg e ripetizioni";
+  const style = document.createElement("style");
+  style.textContent = `
+    @media (max-width: 640px) {
+      input,
+      select,
+      textarea,
+      .beta-set-entry input,
+      .beta-performed-date-panel input,
+      .beta-performed-date-panel select,
+      .beta-editor-extra-fields input,
+      .beta-editor-extra-fields select,
+      .beta-editor-extra-fields textarea {
+        font-size: 16px !important;
+      }
     }
 
-    const editor=document.createElement("div");
-    editor.className="beta-set-entry";
-    editor.innerHTML='<div class="beta-set-selector" role="group" aria-label="Seleziona la serie"></div><div class="beta-active-set"><div class="beta-active-set-title"><span>Serie selezionata</span><strong></strong></div><div class="beta-active-set-fields"><label><span>Peso kg</span><input class="beta-active-weight" type="number" min="0" step="0.5" inputmode="decimal" placeholder="kg"></label><label><span>Ripetizioni</span><input class="beta-active-reps" type="number" min="0" max="999" step="1" inputmode="numeric" placeholder="rep"></label></div><button class="beta-active-complete" type="button"></button></div>';
-    tracker.querySelector(".beta-set-rows").before(editor);
+    .beta-set-entry {
+      margin-top: 12px;
+      border: 1px solid rgba(120, 232, 165, 0.18);
+      background: rgba(120, 232, 165, 0.045);
+      border-radius: 16px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
 
-    const selector=editor.querySelector(".beta-set-selector");
-    const title=editor.querySelector(".beta-active-set-title strong");
-    const weight=editor.querySelector(".beta-active-weight");
-    const reps=editor.querySelector(".beta-active-reps");
-    const complete=editor.querySelector(".beta-active-complete");
-    let activeIndex=Math.max(0,rows.findIndex(row=>!row.classList.contains("is-complete")));
+    .beta-set-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap: 8px;
+    }
 
-    const controls=rows.map((row,index)=>{
-      const button=document.createElement("button");
-      button.type="button";
-      button.className="beta-set-choice";
-      button.addEventListener("click",()=>{activeIndex=index;render()});
-      selector.append(button);
-      return button;
+    .beta-set-chip {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      color: var(--text, #f5f5f5);
+      padding: 9px 10px;
+      text-align: left;
+      cursor: pointer;
+      display: grid;
+      gap: 2px;
+    }
+
+    .beta-set-chip strong {
+      font-size: 0.84rem;
+    }
+
+    .beta-set-chip small {
+      color: var(--muted, #a7b1ac);
+      font-size: 0.72rem;
+    }
+
+    .beta-set-chip.is-active {
+      border-color: var(--accent, #78e8a5);
+      box-shadow: 0 0 0 1px rgba(120,232,165,0.25);
+    }
+
+    .beta-set-chip.is-done {
+      background: rgba(120,232,165,0.12);
+    }
+
+    .beta-active-set {
+      display: grid;
+      gap: 10px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 10px;
+    }
+
+    .beta-active-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted, #a7b1ac);
+      font-size: 0.78rem;
+      gap: 10px;
+    }
+
+    .beta-active-heading strong {
+      color: var(--text, #f5f5f5);
+      font-size: 0.86rem;
+    }
+
+    .beta-active-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .beta-active-fields label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted, #a7b1ac);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .beta-active-fields input {
+      width: 100%;
+      border-radius: 11px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.35);
+      color: var(--text, #f5f5f5);
+      padding: 10px 11px;
+      min-height: 42px;
+    }
+
+    .beta-active-complete,
+    .beta-save-base-values {
+      width: 100%;
+      border-radius: 12px;
+      min-height: 42px;
+      border: 1px solid rgba(120,232,165,0.65);
+      background: transparent;
+      color: var(--accent, #78e8a5);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .beta-save-base-values {
+      border-color: rgba(255,255,255,0.12);
+      color: var(--muted, #a7b1ac);
+      min-height: 38px;
+      font-size: 0.82rem;
+    }
+
+    .beta-card-summary {
+      display: none;
+      width: calc(100% - 24px);
+      margin: 0 12px 12px;
+      border: 1px solid rgba(120,232,165,0.18);
+      background: rgba(120,232,165,0.07);
+      color: var(--text, #f5f5f5);
+      border-radius: 14px;
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .beta-card-summary strong {
+      display: block;
+      font-size: 0.92rem;
+      margin-bottom: 3px;
+    }
+
+    .beta-card-summary span {
+      color: var(--muted, #a7b1ac);
+      font-size: 0.78rem;
+    }
+
+    .exercise-card.beta-exercise-collapsed .beta-card-summary {
+      display: block;
+    }
+
+    .exercise-card.beta-exercise-collapsed .exercise-focus,
+    .exercise-card.beta-exercise-collapsed .exercise-description,
+    .exercise-card.beta-exercise-collapsed .exercise-notes,
+    .exercise-card.beta-exercise-collapsed .beta-set-tracker,
+    .exercise-card.beta-exercise-collapsed .exercise-card-actions,
+    .exercise-card.beta-exercise-collapsed .workoutx-result,
+    .exercise-card.beta-exercise-collapsed .exercise-guides {
+      display: none !important;
+    }
+
+    @media (max-width: 520px) {
+      .beta-active-fields {
+        grid-template-columns: 1fr;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  function rowsFromTracker(tracker) {
+    return Array.from(tracker.querySelectorAll(".beta-set-row"));
+  }
+
+  function rowData(row) {
+    return {
+      row,
+      weight: row.querySelector(".beta-set-weight"),
+      reps: row.querySelector(".beta-set-reps"),
+      complete: row.querySelector(".beta-set-complete"),
+      done: row.classList.contains("is-complete"),
+    };
+  }
+
+  function exerciseForTracker(tracker) {
+    const id = tracker.dataset.exerciseId || tracker.closest(".exercise-card")?.dataset.exerciseId;
+    if (!id || typeof getAllExercises !== "function") return null;
+    const day = typeof activeDay !== "undefined" ? activeDay : null;
+    return getAllExercises(day).find((exercise) => exercise.id === id) || null;
+  }
+
+  function setInputValue(input, value) {
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function isIosShortcutEnabled() {
+    try {
+      const settings = JSON.parse(localStorage.getItem(IOS_TIMER_SETTINGS_KEY) || "{}");
+      return Boolean(settings.enabled);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function startInternalTimer(seconds) {
+    const safeSeconds = Number(seconds);
+    if (!Number.isFinite(safeSeconds) || safeSeconds <= 0) return;
+
+    try {
+      if (typeof stopTimer === "function") stopTimer();
+    } catch (error) {
+      // Non bloccare la compilazione della serie se il timer non e' pronto.
+    }
+
+    if (typeof chooseTimerDuration === "function") {
+      chooseTimerDuration(safeSeconds);
+    } else {
+      try {
+        timerDuration = safeSeconds;
+        timerRemaining = safeSeconds;
+        if (typeof updateTimerDisplay === "function") updateTimerDisplay();
+      } catch (error) {
+        return;
+      }
+    }
+
+    if (typeof startTimer === "function") startTimer();
+  }
+
+  function maybeStartRestTimer(tracker, activeIndex) {
+    const exercise = exerciseForTracker(tracker);
+    const seconds = Number(exercise?.restSeconds || 0);
+    const rows = rowsFromTracker(tracker);
+    if (!seconds || activeIndex >= rows.length - 1) return;
+
+    const key = `${exercise?.id || "exercise"}:${activeIndex}:${seconds}`;
+    const now = Date.now();
+    if (lastAutoTimer.key === key && now - lastAutoTimer.at < TIMER_DEBOUNCE_MS) return;
+    lastAutoTimer = { key, at: now };
+
+    startInternalTimer(seconds);
+
+    if (isIosShortcutEnabled() && typeof window.startIosShortcutTimer === "function") {
+      window.startIosShortcutTimer(seconds);
+    }
+  }
+
+  function summaryText(rows) {
+    const completed = rows.map(rowData).filter((data) => data.done);
+    const values = completed
+      .map((data) => {
+        const weight = data.weight?.value?.trim();
+        const reps = data.reps?.value?.trim();
+        if (weight && reps) return `${weight} kg x ${reps}`;
+        if (weight) return `${weight} kg`;
+        if (reps) return `${reps} rep`;
+        return "serie completata";
+      })
+      .slice(0, 3);
+
+    return {
+      title: `${completed.length}/${rows.length} serie completate`,
+      details: values.join(" · ") || "Tocca per riaprire i dettagli",
+    };
+  }
+
+  function ensureSummary(card, tracker) {
+    let summary = card.querySelector(".beta-card-summary");
+    if (!summary) {
+      summary = document.createElement("button");
+      summary.type = "button";
+      summary.className = "beta-card-summary";
+      const header = card.querySelector(".exercise-card-header");
+      if (header) header.after(summary);
+      else card.prepend(summary);
+      summary.addEventListener("click", () => {
+        const collapsed = card.classList.toggle("beta-exercise-collapsed");
+        card.dataset.betaUserExpanded = collapsed ? "" : "1";
+        if (!collapsed) {
+          const firstInput = tracker.querySelector(".beta-active-weight, .beta-active-reps");
+          firstInput?.focus({ preventScroll: true });
+        }
+      });
+    }
+
+    const text = summaryText(rowsFromTracker(tracker));
+    summary.innerHTML = `<strong>${text.title}</strong><span>${text.details}</span>`;
+    return summary;
+  }
+
+  function updateCollapsedState(tracker, forceCollapse = false) {
+    const card = tracker.closest(".exercise-card");
+    if (!card) return;
+    const rows = rowsFromTracker(tracker);
+    if (!rows.length) return;
+
+    ensureSummary(card, tracker);
+    const allDone = rows.every((row) => row.classList.contains("is-complete"));
+
+    if (!allDone) {
+      card.classList.remove("beta-exercise-collapsed");
+      delete card.dataset.betaUserExpanded;
+      return;
+    }
+
+    if (forceCollapse || !card.dataset.betaUserExpanded) {
+      card.classList.add("beta-exercise-collapsed");
+      delete card.dataset.betaUserExpanded;
+    }
+  }
+
+  function saveBaseValues(tracker) {
+    if (typeof workoutEditorState === "undefined" || typeof saveWorkoutEditorState !== "function") {
+      alert("La modifica dei valori base non e' disponibile in questa sessione.");
+      return;
+    }
+
+    const exercise = exerciseForTracker(tracker);
+    if (!exercise) return;
+
+    const baseSetDetails = rowsFromTracker(tracker).map((row) => {
+      const data = rowData(row);
+      return {
+        weight: data.weight?.value?.trim() || "",
+        reps: data.reps?.value?.trim() || "",
+      };
+    });
+    const notes = tracker.closest(".exercise-card")?.querySelector(".exercise-notes textarea")?.value?.trim() || "";
+
+    workoutEditorState.overrides = workoutEditorState.overrides || {};
+    workoutEditorState.overrides[exercise.id] = {
+      ...(workoutEditorState.overrides[exercise.id] || {}),
+      baseSetDetails,
+      baseNotes: notes,
+      restSeconds: Number(exercise.restSeconds || workoutEditorState.overrides[exercise.id]?.restSeconds || 0),
+    };
+    saveWorkoutEditorState();
+    alert("Valori base aggiornati per questo esercizio.");
+  }
+
+  function enhance(tracker) {
+    if (tracker.dataset.betaCompact === "true") return;
+    tracker.dataset.betaCompact = "true";
+
+    const rows = rowsFromTracker(tracker);
+    if (!rows.length) return;
+
+    tracker.querySelectorAll(".beta-set-row").forEach((row) => {
+      row.style.display = "none";
     });
 
-    function rowData(index){
-      const row=rows[index];
-      return{
-        row,
-        weight:row.querySelector(".beta-set-weight"),
-        reps:row.querySelector(".beta-set-reps"),
-        complete:row.querySelector(".beta-set-complete"),
-        done:row.classList.contains("is-complete")
-      };
-    }
+    let activeIndex = rows.findIndex((row) => !row.classList.contains("is-complete"));
+    if (activeIndex < 0) activeIndex = 0;
 
-    function render(){
-      rows.forEach((row,index)=>{
-        const data=rowData(index);
-        const summary=data.weight.value||data.reps.value?`${data.weight.value||"—"} kg · ${data.reps.value||"—"} rep`:"Da compilare";
-        controls[index].classList.toggle("is-selected",index===activeIndex);
-        controls[index].classList.toggle("is-complete",data.done);
-        controls[index].setAttribute("aria-pressed",String(index===activeIndex));
-        controls[index].innerHTML=`<span>Serie ${index+1}</span><small>${data.done?"✓ ":""}${summary}</small>`;
+    const entry = document.createElement("div");
+    entry.className = "beta-set-entry";
+    tracker.prepend(entry);
+
+    function render(focusWeight = false) {
+      const currentRows = rowsFromTracker(tracker);
+      if (!currentRows[activeIndex]) activeIndex = 0;
+
+      const active = rowData(currentRows[activeIndex]);
+      const chips = currentRows
+        .map((row, index) => {
+          const data = rowData(row);
+          const weight = data.weight?.value?.trim();
+          const reps = data.reps?.value?.trim();
+          const status = data.done ? "Completata" : weight || reps ? "In compilazione" : "Da compilare";
+          return `<button type="button" class="beta-set-chip ${index === activeIndex ? "is-active" : ""} ${data.done ? "is-done" : ""}" data-index="${index}">
+            <strong>Serie ${index + 1}</strong>
+            <small>${status}</small>
+          </button>`;
+        })
+        .join("");
+
+      entry.innerHTML = `
+        <div class="beta-set-selector">${chips}</div>
+        <div class="beta-active-set">
+          <div class="beta-active-heading"><span>Serie selezionata</span><strong>Serie ${activeIndex + 1}</strong></div>
+          <div class="beta-active-fields">
+            <label>Peso kg
+              <input class="beta-active-weight" inputmode="decimal" autocomplete="off" placeholder="kg" value="${active.weight?.value || ""}">
+            </label>
+            <label>Ripetizioni
+              <input class="beta-active-reps" inputmode="numeric" autocomplete="off" placeholder="rep" value="${active.reps?.value || ""}">
+            </label>
+          </div>
+          <button type="button" class="beta-active-complete">${active.done ? "Riapri serie" : "Segna serie completata"}</button>
+          <button type="button" class="beta-save-base-values">Salva come valori base</button>
+        </div>
+      `;
+
+      entry.querySelectorAll(".beta-set-chip").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeIndex = Number(button.dataset.index || 0);
+          tracker.closest(".exercise-card")?.classList.remove("beta-exercise-collapsed");
+          tracker.closest(".exercise-card")?.setAttribute("data-beta-user-expanded", "1");
+          render(true);
+        });
       });
-      const data=rowData(activeIndex);
-      title.textContent=`Serie ${activeIndex+1}`;
-      weight.value=data.weight.value;
-      reps.value=data.reps.value;
-      complete.classList.toggle("is-complete",data.done);
-      complete.textContent=data.done?"Serie completata · Riapri":"Segna serie completata";
-      complete.setAttribute("aria-pressed",String(data.done));
+
+      const weightInput = entry.querySelector(".beta-active-weight");
+      const repsInput = entry.querySelector(".beta-active-reps");
+      weightInput.addEventListener("input", () => setInputValue(active.weight, weightInput.value));
+      repsInput.addEventListener("input", () => setInputValue(active.reps, repsInput.value));
+
+      entry.querySelector(".beta-active-complete").addEventListener("click", () => {
+        const latestRows = rowsFromTracker(tracker);
+        const before = rowData(latestRows[activeIndex]);
+        const wasDone = before.done;
+        before.complete?.click();
+
+        const afterRows = rowsFromTracker(tracker);
+        const after = rowData(afterRows[activeIndex]);
+        const isDone = after.done;
+
+        if (!wasDone && isDone) {
+          const nextIndex = afterRows.findIndex((row, index) => index > activeIndex && !row.classList.contains("is-complete"));
+          maybeStartRestTimer(tracker, activeIndex);
+
+          if (nextIndex >= 0) {
+            activeIndex = nextIndex;
+            render(true);
+          } else {
+            render(false);
+            updateCollapsedState(tracker, true);
+          }
+          return;
+        }
+
+        render(true);
+        updateCollapsedState(tracker, false);
+      });
+
+      entry.querySelector(".beta-save-base-values").addEventListener("click", () => saveBaseValues(tracker));
+
+      updateCollapsedState(tracker, false);
+
+      if (focusWeight) {
+        setTimeout(() => {
+          const target = entry.querySelector(".beta-active-weight") || entry.querySelector(".beta-active-reps");
+          target?.focus({ preventScroll: true });
+        }, 0);
+      }
     }
 
-    weight.addEventListener("input",()=>{dispatchInput(rowData(activeIndex).weight,weight.value);render()});
-    reps.addEventListener("input",()=>{dispatchInput(rowData(activeIndex).reps,reps.value);render()});
-    complete.addEventListener("click",()=>{rowData(activeIndex).complete.click();render()});
-    render();
+    render(false);
   }
 
-  function enhanceAll(){
-    document.querySelectorAll(".beta-set-tracker").forEach(enhanceTracker);
+  function refresh() {
+    document.querySelectorAll(".beta-set-tracker").forEach(enhance);
   }
 
-  const observer=new MutationObserver(()=>{
-    if(scheduled)return;
-    scheduled=true;
-    requestAnimationFrame(()=>{scheduled=false;enhanceAll()});
-  });
-  observer.observe(document.body,{childList:true,subtree:true});
+  const observer = new MutationObserver(refresh);
+  observer.observe(document.body, { childList: true, subtree: true });
 
-  const style=document.createElement("style");
-  style.textContent='.exercise-fields[hidden]{display:none!important}.beta-set-tracker-compact .beta-set-rows{display:none!important}.beta-set-entry{display:grid;gap:9px}.beta-set-selector{display:grid;grid-template-columns:repeat(auto-fit,minmax(82px,1fr));gap:6px}.beta-set-choice{display:grid;gap:2px;min-width:0;min-height:48px;padding:7px 8px;border:1px solid var(--border);border-radius:10px;background:var(--surface-strong);color:var(--text);text-align:left}.beta-set-choice span{font-size:.7rem;font-weight:850}.beta-set-choice small{overflow:hidden;color:var(--muted);font-size:.56rem;text-overflow:ellipsis;white-space:nowrap}.beta-set-choice.is-selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.beta-set-choice.is-complete small{color:var(--accent)}.beta-active-set{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:10px;border:1px solid var(--border);border-radius:12px;background:var(--surface-strong)}.beta-active-set-title{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px}.beta-active-set-title span{color:var(--muted);font-size:.62rem}.beta-active-set-title strong{font-size:.78rem}.beta-active-set-fields{display:contents}.beta-active-set label{display:grid;gap:4px;color:var(--muted);font-size:.58rem;font-weight:750}.beta-active-set input{width:100%;min-width:0;min-height:40px;padding:7px 9px;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--text);font-size:.86rem}.beta-active-complete{grid-column:1/-1;min-height:40px;border:1px solid var(--accent);border-radius:9px;background:transparent;color:var(--accent);font-size:.72rem;font-weight:850}.beta-active-complete.is-complete{background:var(--accent);color:var(--accent-ink)}@media(max-width:390px){.beta-set-selector{grid-template-columns:repeat(2,minmax(0,1fr))}}';
-  document.head.append(style);
-  enhanceAll();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", refresh);
+  } else {
+    refresh();
+  }
 })();
