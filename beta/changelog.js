@@ -1,6 +1,11 @@
 "use strict";
 (function initializeBetaChangelog(){
   const RELEASES=[
+    {version:"0.7",date:"18/06/2026",items:[
+      "Interfaccia della scheda più pulita durante l'allenamento: rimane visibile solo la compilazione serie-per-serie.",
+      "Rimosso dalla pagina principale il pulsante per salvare i valori base, che ora restano nella modifica esercizio.",
+      "Nascosto in modo più netto il vecchio blocco Peso usato / Serie completate quando è attivo il tracker beta."
+    ]},
     {version:"0.6",date:"18/06/2026",items:[
       "Compilazione dell'allenamento più comoda su iPhone: niente zoom automatico nei campi e passaggio rapido alla serie successiva.",
       "Gli esercizi completati si richiudono da soli, così la scheda resta più pulita durante l'allenamento.",
