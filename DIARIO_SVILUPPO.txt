@@ -1,5 +1,5 @@
 DIARIO DI SVILUPPO - FITNESS
-Ultimo aggiornamento: 2026-06-17
+Ultimo aggiornamento: 2026-06-18
 
 Questo file e il diario tecnico e funzionale del progetto Fitness.
 Va aggiornato a ogni modifica futura, includendo cosa e stato cambiato, perche,
@@ -31,10 +31,11 @@ Nota operativa stabile:
 
 Fase attuale beta:
 
-- Versione beta: 0.5.
+- Versione beta: 0.6.
 - Webapp beta: https://lukethehawk.github.io/fitness/beta/
 - La beta usa dati separati dalla versione pubblica tramite storage sandbox.
-- La beta contiene lo storico allenamenti e i grafici di progressione.
+- La beta contiene lo storico allenamenti, i grafici di progressione e la nuova
+  UX di compilazione sessione su iPhone/Safari.
 - Le modifiche beta non sono ancora state trasferite alla versione stabile.
 
 Prossima fase consigliata:
@@ -48,7 +49,8 @@ Priorita immediata consigliata:
   esercizio.
 - Testare aggiunta esercizio su iPhone reale e su Firefox desktop/mobile.
 - Verificare export Markdown, condivisione iOS, download .md ed export Excel.
-- Solo dopo completare il test Beta 0.5 sui grafici di progressione.
+- Testare Beta 0.6 su iPhone/Safari: inserimento serie, collasso card,
+  recupero automatico, data reale di esecuzione e salvataggio storico.
 
 Stack tecnico attuale:
 
@@ -112,6 +114,13 @@ Funzioni operative nella beta:
 - backup/import impostazioni, schede, progressi e storico;
 - hardening su backup, reset, storage, cache e popup;
 - grafici di progressione Beta 0.5.
+- UX compilazione Beta 0.6:
+  - campi mobile senza zoom automatico su iPhone;
+  - auto-avanzamento alla serie successiva;
+  - collasso automatico degli esercizi completati;
+  - data e giorno reale di esecuzione prima del salvataggio;
+  - valori base per peso, ripetizioni, note e recupero per esercizio;
+  - timer recupero automatico interno o tramite shortcut iOS.
 
 Problemi aperti principali:
 
@@ -463,6 +472,95 @@ Verifiche:
 - Il test browser mobile era stato avviato ma e stato interrotto dalla richiesta
   di creare questo diario.
 - Da completare: verifica reale della vista Progressione su beta online.
+
+-------------------------------------------------------------------------------
+BETA 0.6 - UX COMPILAZIONE ALLENAMENTO SU IPHONE/SAFARI
+-------------------------------------------------------------------------------
+
+Stato:
+
+- Implementata in beta.
+- Non portare in stabile finche non sono completati i test su iPhone reale.
+
+Obiettivo:
+
+- rendere piu veloce e meno macchinosa la compilazione dell'allenamento durante
+  l'uso reale in palestra, soprattutto da Safari su iPhone.
+
+Funzioni implementate:
+
+- input/select/textarea con font-size minimo adeguato per evitare lo zoom
+  automatico di iOS nei campi principali;
+- selezione della serie corrente con inserimento peso kg e ripetizioni;
+- completando una serie, la UI passa automaticamente alla serie successiva;
+- completando l'ultima serie, l'esercizio si richiude in forma compatta;
+- gli esercizi completati mostrano un riepilogo breve con serie fatte e carichi;
+- prima di salvare nello storico e possibile indicare data e giorno effettivi
+  dell'allenamento;
+- lo storico salva sia il giorno programmato della scheda sia il giorno reale di
+  esecuzione;
+- export Markdown/Excel beta ricevono la data effettiva quando si esporta la
+  giornata corrente;
+- ogni esercizio puo salvare valori base:
+  - peso base;
+  - ripetizioni base;
+  - note base;
+  - recupero automatico;
+- nella scheda e presente il pulsante "Salva come valori base" per aggiornare i
+  valori base partendo dalla sessione corrente;
+- il recupero automatico puo avviare il timer interno;
+- se la modalita shortcut iOS e attiva, il recupero automatico prova ad aprire
+  anche Comandi Rapidi e mantiene il timer locale come fallback visivo.
+
+Scelta tecnica:
+
+- nessun nuovo backend;
+- nessuna nuova dipendenza;
+- nessun nuovo file JavaScript;
+- modifiche confinate alla beta e ai file gia responsabili:
+  - beta/workout-history.js;
+  - beta/set-entry-ui.js;
+  - beta/edit-mode-ui.js;
+  - beta/beta-shell.js;
+  - beta/history-polish.js;
+  - beta/changelog.js;
+  - beta/sw.js;
+  - beta/index.html.
+
+Backup/import:
+
+- i nuovi valori base e il recupero automatico sono salvati negli override
+  esistenti della scheda, quindi rientrano nel backup beta gia presente;
+- data/giorno reale sono salvati dentro le sessioni dello storico, quindi
+  rientrano nel backup beta gia presente;
+- nessuna API key viene aggiunta al backup.
+
+Verifiche eseguite:
+
+- controllo sintassi con node --check sui file JS modificati:
+  - beta/set-entry-ui.js;
+  - beta/workout-history.js;
+  - beta/edit-mode-ui.js;
+  - beta/beta-shell.js;
+  - beta/history-polish.js;
+  - beta/changelog.js;
+  - beta/sw.js.
+- cache beta aggiornata a fitness-beta-v9;
+- versione beta aggiornata a 0.6;
+- changelog beta aggiornato.
+
+Verifiche ancora da fare:
+
+- test su iPhone/Safari reale;
+- modifica esercizio e salvataggio valori base;
+- nuova sessione con precompilazione valori base;
+- completamento serie con auto-avanzamento;
+- collasso e riapertura di un esercizio completato;
+- recupero automatico con timer interno;
+- recupero automatico con shortcut iOS;
+- salvataggio storico con data diversa da oggi;
+- export Markdown/Excel dopo scelta della data reale;
+- backup/import dopo aver salvato valori base e sessioni Beta 0.6.
 
 ===============================================================================
 SCELTE TECNICHE IMPORTANTI
