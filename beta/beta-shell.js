@@ -1,20 +1,51 @@
 "use strict";
 (function initializeBetaShell(){
-  const BETA_VERSION="0.9";
+  const BETA_VERSION="0.10";
   const VISUAL_MODE_KEY="fitness-visual-mode-v1";
+  const ACCENT_KEY="fitness-accent-color-v1";
   const CLEAN_MODE="clean-contrast";
+  const ACCENTS=[
+    {id:"green",label:"Verde",accent:"#7ee2ad",strong:"#4fc58c",ink:"#092116",soft:"#183226"},
+    {id:"blue",label:"Blu",accent:"#8ec5ff",strong:"#5aa9f7",ink:"#061629",soft:"#132842"},
+    {id:"violet",label:"Viola",accent:"#c7a8ff",strong:"#a881f0",ink:"#1b0f2d",soft:"#2a1f42"},
+    {id:"amber",label:"Ambra",accent:"#ffd166",strong:"#f4a927",ink:"#241604",soft:"#3a2a12"},
+    {id:"rose",label:"Rosa",accent:"#ff9fc7",strong:"#f06b9e",ink:"#2a0617",soft:"#3a1a28"},
+    {id:"cyan",label:"Ciano",accent:"#7de7e0",strong:"#47c9c0",ink:"#041f20",soft:"#123333"}
+  ];
 
+  function selectedAccent(){return ACCENTS.find(item=>item.id===localStorage.getItem(ACCENT_KEY))||ACCENTS[0]}
   function visualMode(){return localStorage.getItem(VISUAL_MODE_KEY)||"default"}
+  function applyAccentColor(){
+    const accent=selectedAccent();
+    [document.documentElement,document.body].forEach(target=>{
+      target.style.setProperty("--accent",accent.accent);
+      target.style.setProperty("--accent-strong",accent.strong);
+      target.style.setProperty("--accent-ink",accent.ink);
+      target.style.setProperty("--accent-soft",accent.soft);
+    });
+    document.querySelectorAll(".beta-accent-current").forEach(swatch=>{swatch.style.background=accent.accent});
+    const label=document.querySelector("#betaAccentCurrentLabel");
+    if(label)label.textContent=accent.label;
+    document.querySelectorAll(".beta-accent-choice").forEach(button=>button.setAttribute("aria-pressed",String(button.dataset.accent===accent.id)));
+  }
+  function setAccentColor(id){
+    if(id===ACCENTS[0].id)localStorage.removeItem(ACCENT_KEY);
+    else localStorage.setItem(ACCENT_KEY,id);
+    applyAccentColor();
+  }
   function applyVisualMode(){
     document.body.classList.toggle("beta-clean-contrast",visualMode()===CLEAN_MODE);
     const checkbox=document.querySelector("#betaCleanContrastToggle");
     if(checkbox)checkbox.checked=visualMode()===CLEAN_MODE;
+    applyAccentColor();
   }
   function setVisualMode(enabled){
     if(enabled)localStorage.setItem(VISUAL_MODE_KEY,CLEAN_MODE);
     else localStorage.removeItem(VISUAL_MODE_KEY);
     applyVisualMode();
   }
+
+  applyAccentColor();
 
   const banner=document.createElement("aside");
   banner.className="beta-banner";
@@ -37,16 +68,40 @@
   if(!placeFooter()){const observer=new MutationObserver(()=>{if(placeFooter())observer.disconnect()});observer.observe(document.body,{childList:true,subtree:true})}
   footer.querySelector("#clearBetaData").addEventListener("click",()=>{if(!window.confirm("Cancellare tutti i dati salvati nella versione beta? I dati della versione pubblica resteranno invariati."))return;window.betaStorageSandbox.clearBeta();window.location.reload()});
 
+  function createAccentOverlay(){
+    if(document.querySelector("#betaAccentOverlay"))return;
+    const overlay=document.createElement("div");
+    overlay.id="betaAccentOverlay";
+    overlay.className="overlay beta-accent-overlay";
+    overlay.hidden=true;
+    overlay.innerHTML=`<section class="beta-accent-sheet" role="dialog" aria-modal="true" aria-labelledby="betaAccentTitle"><div class="sheet-header"><div><p class="eyebrow">Aspetto</p><h2 id="betaAccentTitle">Colore accento</h2></div><button id="closeBetaAccent" class="close-button" type="button" aria-label="Chiudi selezione colore">×</button></div><p class="beta-accent-intro">Scegli un colore per pulsanti, evidenziazioni e dettagli dell'interfaccia.</p><div class="beta-accent-grid">${ACCENTS.map(item=>`<button class="beta-accent-choice" type="button" data-accent="${item.id}" aria-pressed="false"><span style="background:${item.accent}"></span><strong>${item.label}</strong></button>`).join("")}</div></section>`;
+    document.body.append(overlay);
+    const close=()=>{overlay.hidden=true;if(document.querySelector("#menuOverlay")?.hidden!==false)document.body.classList.remove("has-open-menu")};
+    overlay.querySelector("#closeBetaAccent").addEventListener("click",close);
+    overlay.addEventListener("click",event=>{if(event.target===overlay)close()});
+    overlay.querySelectorAll(".beta-accent-choice").forEach(button=>button.addEventListener("click",()=>{setAccentColor(button.dataset.accent);close()}));
+    document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!overlay.hidden)close()});
+    applyAccentColor();
+  }
+  function openAccentOverlay(){
+    createAccentOverlay();
+    const overlay=document.querySelector("#betaAccentOverlay");
+    overlay.hidden=false;
+    document.body.classList.add("has-open-menu");
+    overlay.querySelector("#closeBetaAccent").focus();
+  }
+
   function injectVisualModeSetting(){
     const menu=document.querySelector(".menu-sheet");
     if(!menu||document.querySelector("#betaVisualModeSettings"))return false;
     const section=document.createElement("section");
     section.id="betaVisualModeSettings";
     section.className="beta-visual-mode-settings";
-    section.innerHTML=`<div><strong>Tema alto contrasto</strong><span>Riduce gradienti, ombre e colori poco leggibili per testare una UI più pulita.</span></div><label class="beta-switch"><input id="betaCleanContrastToggle" type="checkbox"><span>Attiva</span></label>`;
+    section.innerHTML=`<div><strong>Tema alto contrasto</strong><span>Riduce gradienti, ombre e colori poco leggibili per testare una UI più pulita.</span></div><label class="beta-switch"><input id="betaCleanContrastToggle" type="checkbox"><span>Attiva</span></label><div class="beta-accent-control"><div><strong>Colore accento</strong><span>Cambia pulsanti ed evidenziazioni.</span></div><button id="betaOpenAccentPicker" class="beta-accent-button" type="button"><span class="beta-accent-current" aria-hidden="true"></span><span id="betaAccentCurrentLabel">Verde</span></button></div>`;
     const anchor=menu.querySelector("#exerciseLanguageSettings")||menu.querySelector(".ios-shortcut-settings")||menu.querySelector(".workoutx-settings")||menu.querySelector(".data-actions");
     if(anchor)anchor.after(section);else menu.append(section);
     section.querySelector("#betaCleanContrastToggle").addEventListener("change",event=>setVisualMode(event.target.checked));
+    section.querySelector("#betaOpenAccentPicker").addEventListener("click",openAccentOverlay);
     applyVisualMode();
     return true;
   }
@@ -64,52 +119,27 @@
     .beta-visual-mode-settings{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin:14px 0;padding:13px;border:1px solid var(--border);border-radius:14px;background:var(--surface-strong)}
     .beta-visual-mode-settings strong{display:block;color:var(--text);font-size:.86rem}.beta-visual-mode-settings span{display:block;color:var(--muted);font-size:.7rem;line-height:1.4}
     .beta-switch{display:flex;align-items:center;gap:8px;color:var(--text);font-size:.72rem;font-weight:850}.beta-switch input{width:22px;height:22px;accent-color:var(--accent)}
+    .beta-accent-control{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:11px;border-top:1px solid var(--border)}
+    .beta-accent-button{display:inline-flex;align-items:center;gap:9px;min-height:38px;padding:0 11px;border:1px solid var(--border);border-radius:12px;background:var(--surface-soft);color:var(--text);font-weight:850;cursor:pointer}.beta-accent-current{display:inline-block!important;width:22px;height:22px;border:2px solid rgb(255 255 255 / 70%);border-radius:7px;box-shadow:0 0 0 1px rgb(0 0 0 / 35%)}
+    .beta-accent-overlay{z-index:260}.beta-accent-sheet{width:min(100%,520px);margin:auto 0 0;padding:22px 16px max(28px,env(safe-area-inset-bottom));border-radius:26px 26px 0 0;background:var(--surface);border:1px solid var(--border)}.beta-accent-intro{margin:10px 0 15px;color:var(--muted);font-size:.75rem;line-height:1.45}.beta-accent-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.beta-accent-choice{display:flex;align-items:center;gap:10px;min-height:52px;padding:9px 10px;border:1px solid var(--border);border-radius:14px;background:var(--surface-strong);color:var(--text);text-align:left;cursor:pointer}.beta-accent-choice span{width:28px;height:28px;border-radius:9px;border:2px solid rgb(255 255 255 / 70%)}.beta-accent-choice[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px rgb(126 226 173 / 18%)}.beta-accent-choice strong{font-size:.86rem}
 
-    body.beta-clean-contrast{--bg:#050806;--surface:#0d1411;--surface-strong:#101915;--surface-soft:#17221d;--text:#fbfffd;--muted:#d2ddd7;--accent:#a8f0c8;--accent-strong:#7de0aa;--accent-ink:#06120c;--border:#55645d;--shadow:none;background:var(--bg)!important;color:var(--text)}
-    body.beta-clean-contrast .dashboard,
-    body.beta-clean-contrast .quick-notes article,
-    body.beta-clean-contrast .exercise-card,
-    body.beta-clean-contrast .timer-panel,
-    body.beta-clean-contrast .menu-sheet,
-    body.beta-clean-contrast .catalog-sheet,
-    body.beta-clean-contrast .universal-editor-sheet,
-    body.beta-clean-contrast .beta-history-sheet,
-    body.beta-clean-contrast .beta-changelog-sheet,
-    body.beta-clean-contrast .beta-set-entry,
-    body.beta-clean-contrast .beta-performed-date-panel,
-    body.beta-clean-contrast .beta-history-session,
-    body.beta-clean-contrast .beta-history-exercise,
-    body.beta-clean-contrast .beta-progress-summary span,
-    body.beta-clean-contrast .beta-progress-timeline article,
-    body.beta-clean-contrast .beta-visual-mode-settings{background:var(--surface)!important;background-image:none!important;border-color:var(--border)!important;box-shadow:none!important}
+    body.beta-clean-contrast{--bg:#050806;--surface:#0d1411;--surface-strong:#101915;--surface-soft:#17221d;--text:#fbfffd;--muted:#d2ddd7;--border:#55645d;--shadow:none;background:var(--bg)!important;color:var(--text)}
+    body.beta-clean-contrast .dashboard,body.beta-clean-contrast .quick-notes article,body.beta-clean-contrast .exercise-card,body.beta-clean-contrast .timer-panel,body.beta-clean-contrast .menu-sheet,body.beta-clean-contrast .catalog-sheet,body.beta-clean-contrast .universal-editor-sheet,body.beta-clean-contrast .beta-history-sheet,body.beta-clean-contrast .beta-changelog-sheet,body.beta-clean-contrast .beta-set-entry,body.beta-clean-contrast .beta-performed-date-panel,body.beta-clean-contrast .beta-history-session,body.beta-clean-contrast .beta-history-exercise,body.beta-clean-contrast .beta-progress-summary span,body.beta-clean-contrast .beta-progress-timeline article,body.beta-clean-contrast .beta-visual-mode-settings,body.beta-clean-contrast .beta-accent-sheet{background:var(--surface)!important;background-image:none!important;border-color:var(--border)!important;box-shadow:none!important}
     body.beta-clean-contrast .exercise-card{border-width:1.5px!important}
     body.beta-clean-contrast .primary-button{background:var(--accent)!important;color:var(--accent-ink)!important;box-shadow:none!important}
-    body.beta-clean-contrast .secondary-button,
-    body.beta-clean-contrast .icon-button,
-    body.beta-clean-contrast .tab-button,
-    body.beta-clean-contrast .timer-presets button,
-    body.beta-clean-contrast .beta-set-chip,
-    body.beta-clean-contrast .beta-active-complete,
-    body.beta-clean-contrast .beta-card-summary{background:var(--surface-soft)!important;border:1.5px solid var(--border)!important;box-shadow:none!important;color:var(--text)!important}
-    body.beta-clean-contrast .tab-button.is-active,
-    body.beta-clean-contrast .timer-presets button.is-selected,
-    body.beta-clean-contrast .beta-set-chip.is-active{border-color:var(--accent)!important;background:#183226!important;color:var(--text)!important}
-    body.beta-clean-contrast .eyebrow,
-    body.beta-clean-contrast .icon-button span:first-child,
-    body.beta-clean-contrast .reps-badge,
-    body.beta-clean-contrast .beta-set-chip.is-done small{color:var(--accent)!important}
-    body.beta-clean-contrast input,
-    body.beta-clean-contrast textarea,
-    body.beta-clean-contrast select{background:#030504!important;border-color:var(--border)!important;color:var(--text)!important}
+    body.beta-clean-contrast .secondary-button,body.beta-clean-contrast .icon-button,body.beta-clean-contrast .tab-button,body.beta-clean-contrast .timer-presets button,body.beta-clean-contrast .beta-set-chip,body.beta-clean-contrast .beta-active-complete,body.beta-clean-contrast .beta-card-summary,body.beta-clean-contrast .beta-accent-button,body.beta-clean-contrast .beta-accent-choice{background:var(--surface-soft)!important;border:1.5px solid var(--border)!important;box-shadow:none!important;color:var(--text)!important}
+    body.beta-clean-contrast .tab-button.is-active,body.beta-clean-contrast .timer-presets button.is-selected,body.beta-clean-contrast .beta-set-chip.is-active{border-color:var(--accent)!important;background:var(--accent-soft)!important;color:var(--text)!important}
+    body.beta-clean-contrast .eyebrow,body.beta-clean-contrast .icon-button span:first-child,body.beta-clean-contrast .reps-badge,body.beta-clean-contrast .beta-set-chip.is-done small{color:var(--accent)!important}
+    body.beta-clean-contrast input,body.beta-clean-contrast textarea,body.beta-clean-contrast select{background:#030504!important;border-color:var(--border)!important;color:var(--text)!important}
     body.beta-clean-contrast .beta-banner{background:#10130d!important;border-color:#6c735f!important;box-shadow:none!important;color:#fff6d0!important}
     body.beta-clean-contrast .overlay{background:rgb(0 0 0 / 72%)!important}
-    body.beta-clean-contrast .exercise-description,
-    body.beta-clean-contrast .dashboard-copy,
-    body.beta-clean-contrast .quick-notes span{color:var(--muted)!important}
+    body.beta-clean-contrast .exercise-description,body.beta-clean-contrast .dashboard-copy,body.beta-clean-contrast .quick-notes span{color:var(--muted)!important}
     body.beta-clean-contrast .workout-tabs{background:transparent!important;border-color:var(--border)!important}
-    @media(max-width:460px){.beta-banner{align-items:stretch;flex-direction:column}.beta-banner button{align-self:start}.beta-footer{align-items:flex-start;flex-wrap:wrap}.beta-footer .beta-public-link{width:100%}.beta-visual-mode-settings{grid-template-columns:1fr}}
+    @media(max-width:460px){.beta-banner{align-items:stretch;flex-direction:column}.beta-banner button{align-self:start}.beta-footer{align-items:flex-start;flex-wrap:wrap}.beta-footer .beta-public-link{width:100%}.beta-visual-mode-settings,.beta-accent-control{grid-template-columns:1fr;display:grid}.beta-accent-grid{grid-template-columns:1fr}}
+    @media(min-width:600px){.beta-accent-sheet{margin:7vh auto;border-radius:26px}}
   `;
   document.head.append(style);
+  createAccentOverlay();
   applyVisualMode();
 
   if(!document.querySelector('script[data-beta-changelog]')){const changelog=document.createElement("script");changelog.src=`beta/changelog.js?v=${BETA_VERSION}`;changelog.dataset.betaChangelog="true";document.body.append(changelog)}
