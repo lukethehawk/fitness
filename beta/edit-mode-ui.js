@@ -59,6 +59,15 @@
     restPreset.addEventListener("change",()=>{
       customLabel.hidden=restPreset.value!=="custom";
     });
+    const saveButton=document.querySelector("#saveUniversalExercise");
+    if(saveButton&&!saveButton.dataset.betaExtraSave){
+      saveButton.dataset.betaExtraSave="true";
+      saveButton.addEventListener("click",event=>{
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if(typeof saveUniversalExercise==="function")saveUniversalExercise();
+      },true);
+    }
     return extra;
   }
 
