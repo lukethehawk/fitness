@@ -1,6 +1,7 @@
 "use strict";
 (function initializeAppChangelog(){
 const releases=[
+  {version:"1.0.45",date:"19 giugno 2026",title:"Spaziatura corretta sotto al logo",items:["Corretto il punto della spaziatura: ora il respiro è tra logo/titolo e giorni di allenamento.","La modifica resta solo visiva e non tocca schede, storico o impostazioni."]},
   {version:"1.0.44",date:"19 giugno 2026",title:"Più respiro nella scheda",items:["Aggiunta una spaziatura più comoda tra il blocco iniziale e i giorni di allenamento.","La modifica è solo visiva e non cambia dati, storico o impostazioni."]},
   {version:"1.0.43",date:"19 giugno 2026",title:"Esercizi più personalizzabili",items:["Le istruzioni di esecuzione ora si modificano direttamente dalla modifica dell'esercizio.","Gli esercizi aggiunti dal catalogo non mostrano più testi automatici poco utili se non sono state inserite istruzioni.","La rimozione degli esercizi personalizzati è stata uniformata: si gestisce dalla modalità Modifica scheda, come per gli esercizi preconfigurati."]},
   {version:"1.0.42",date:"19 giugno 2026",title:"Pagina allenamento più pulita",items:["Rimossi i tre suggerimenti fissi sotto al titolo per lasciare più spazio alla scheda.","La pagina dà più priorità a esercizi, serie e note persistenti personalizzabili dall'utente."]},
