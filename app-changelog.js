@@ -1,6 +1,7 @@
 "use strict";
 (function initializeAppChangelog(){
 const releases=[
+  {version:"1.0.42",date:"19 giugno 2026",title:"Pagina allenamento più pulita",items:["Rimossi i tre suggerimenti fissi sotto al titolo per lasciare più spazio alla scheda.","La pagina dà più priorità a esercizi, serie e note persistenti personalizzabili dall'utente."]},
   {version:"1.0.41",date:"19 giugno 2026",title:"Funzioni beta nella versione pubblica",items:["Arrivano lo storico allenamenti e il salvataggio di peso e ripetizioni per ogni singola serie.","Aggiunti grafici di progressione per seguire nel tempo carichi, ripetizioni e volume degli esercizi.","Aggiunti backup/import dati per spostare schede e impostazioni tra dispositivi.","Portati in produzione tema alto contrasto e selettore del colore accento dell'interfaccia.","Migliorata la modalità modifica scheda, con gestione più chiara di esercizi, valori base e ordine degli esercizi."]},
   {version:"1.0.40",date:"11 giugno 2026",title:"Le novità sono ora dentro l'app",items:["Aggiunto il pulsante Novità accanto alla versione.","La cronologia delle funzioni principali è consultabile senza uscire dalla webapp."]},
   {version:"1.0.39",date:"11 giugno 2026",title:"Esportazione Excel",items:["Puoi esportare la giornata o l'intera settimana in formato Excel.","Il foglio contiene una riga per esercizio, filtri automatici e colonne per carichi, serie, note e parti del corpo."]},
