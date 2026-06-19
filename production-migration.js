@@ -13,7 +13,9 @@
     "fitness-exercise-language-v1",
     "fitness-ios-shortcut-timer-v1",
     "fitness-workout-sessions-v1",
-    "fitness-workoutx-cache-v1"
+    "fitness-workoutx-cache-v1",
+    "fitness-visual-mode-v1",
+    "fitness-accent-color-v1"
   ];
   if(localStorage.getItem(MIGRATION_KEY))return;
   const legacyMarker=localStorage.getItem(LEGACY_MIGRATION_KEY);
