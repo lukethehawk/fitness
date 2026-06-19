@@ -1,9 +1,11 @@
-main > .dashboard + .workout-tabs {
+.app-header + main .workout-tabs,
+main > .workout-tabs {
   margin-top: 18px;
 }
 
 @media (max-width: 520px) {
-  main > .dashboard + .workout-tabs {
+  .app-header + main .workout-tabs,
+  main > .workout-tabs {
     margin-top: 16px;
   }
 }
